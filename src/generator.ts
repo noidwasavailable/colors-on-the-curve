@@ -1,11 +1,16 @@
+// @ts-ignore
+import { getColorName, initColors, ORIGINAL_COLORS, type FORMATTED_COLOR } from 'ntc-ts';
 import { applyCurve, hslToRgb, rgbToHex, makeCmykSafe, rgbToCmyk } from './colorMath.js';
 import type { PaletteConfig, PaletteResult, ColorResult } from './types.js';
 
+// Init the available colors for ntc-ts
+initColors(ORIGINAL_COLORS);
+
 export function generatePalette(config: PaletteConfig): PaletteResult {
   const { shades, baseHue, hueShift = 0, saturation, lightness, cmykSafe = false } = config;
-  
+
   if (shades.length === 0) {
-    return { name: config.name, colors: [] };
+    return { name: config.name || 'Unnamed Palette', colors: [] };
   }
 
   const minShade = Math.min(...shades);
@@ -27,11 +32,11 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     // 3. Saturation calculation
     let finalS = 0;
     if (t < 0.5) {
-      const halfT = t * 2; 
+      const halfT = t * 2;
       const p = applyCurve(halfT, saturation.curve);
       finalS = saturation.minLight + (saturation.peak - saturation.minLight) * p;
     } else {
-      const halfT = (t - 0.5) * 2; 
+      const halfT = (t - 0.5) * 2;
       const p = applyCurve(halfT, saturation.curve);
       finalS = saturation.peak + (saturation.minDark - saturation.peak) * p;
     }
@@ -63,8 +68,16 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     };
   });
 
+  const paletteName = config.name ?? (() => {
+    const baseColor = colors.reduce((prev, curr) =>
+      Math.abs(curr.shade - 500) < Math.abs(prev.shade - 500) ? curr : prev
+    );
+    const match: FORMATTED_COLOR = getColorName(baseColor.hex);
+    return match.name as string
+  })()
+
   return {
-    name: config.name,
+    name: paletteName,
     colors
   };
 }

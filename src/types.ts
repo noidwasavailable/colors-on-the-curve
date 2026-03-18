@@ -14,7 +14,7 @@ export interface SaturationConfig {
 }
 
 export interface PaletteConfig {
-  name: string;
+  name?: string;
   baseHue: number;          // 0 - 360
   hueShift?: number;        // total shift in degrees from lightest to darkest (e.g. -20 or 15)
   saturation: SaturationConfig;
