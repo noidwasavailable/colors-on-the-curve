@@ -3,6 +3,10 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun run src/cli.ts example.config.ts",
+    "cli": "bun run src/cli.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
