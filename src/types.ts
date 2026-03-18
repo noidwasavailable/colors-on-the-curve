@@ -17,6 +17,7 @@ export interface PaletteConfig {
   name?: string;
   baseHue: number;          // 0 - 360
   hueShift?: number;        // total shift in degrees from lightest to darkest (e.g. -20 or 15)
+  hueCurve?: CurveType;     // curve to apply to the hue shift
   saturation: SaturationConfig;
   lightness: CurveConfig;   // typically start = 95 (lightest), end = 10 (darkest)
   shades: number[];         // e.g., [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]

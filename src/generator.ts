@@ -22,7 +22,8 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     const t = range === 0 ? 0.5 : (shade - minShade) / range;
 
     // 1. Hue calculation
-    const h = (baseHue + (hueShift * t)) % 360;
+    const hueProgression = config.hueCurve ? applyCurve(t, config.hueCurve) : t;
+    const h = (baseHue + (hueShift * hueProgression)) % 360;
     const finalH = h < 0 ? h + 360 : h;
 
     // 2. Lightness calculation

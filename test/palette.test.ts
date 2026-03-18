@@ -67,4 +67,29 @@ describe("Generator", () => {
     expect(result.colors[0]!).toHaveProperty("cmyk");
     expect(result.colors[0]!).toHaveProperty("isCmykSafe");
   });
+
+  test("generatePalette applies hue curve correctly", () => {
+    const config: PaletteConfig = {
+      name: "Hue Curve Test",
+      baseHue: 200,
+      hueShift: 100,
+      hueCurve: "parabolic", // 0 -> 1 -> 0
+      saturation: { peak: 100, minDark: 100, minLight: 100, curve: "linear" },
+      lightness: { start: 50, end: 50, curve: "linear" },
+      shades: [100, 500, 900], // t = 0, 0.5, 1
+      cmykSafe: false
+    };
+
+    const result = generatePalette(config);
+    expect(result.colors.length).toBe(3);
+
+    // At t=0, hueCurve(0) = 0. h = 200 + 100*0 = 200
+    expect(result.colors[0]!.hsl[0]).toBe(200);
+
+    // At t=0.5, hueCurve(0.5) = 1. h = 200 + 100*1 = 300
+    expect(result.colors[1]!.hsl[0]).toBe(300);
+
+    // At t=1.0, hueCurve(1.0) = 0. h = 200 + 100*0 = 200
+    expect(result.colors[2]!.hsl[0]).toBe(200);
+  });
 });
