@@ -324,7 +324,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
               color={action.key === "q" ? "red" : "green"}
               bold
             >
-              [{action.key.toUpperCase()}] {action.label}
+              [{action.key}] {action.label}
             </Text>
           ))}
         </Box>

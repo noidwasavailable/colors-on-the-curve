@@ -15,8 +15,10 @@ interface PalettePreviewProps {
   activeIndex: number;
 }
 
-const VISIBLE_SWATCH_COUNT = 8;
-const SWATCH_BLOCK = "        ";
+const VISIBLE_SWATCH_COUNT = 11;
+const SWATCH_BLOCK_WIDTH = 6;
+const SWATCH_BLOCK_HEIGHT = 2;
+const SWATCH_BLOCK = " ".repeat(SWATCH_BLOCK_WIDTH);
 
 export function PalettePreview({
   config,
@@ -132,13 +134,25 @@ export function PalettePreview({
 
               <Box flexDirection="row">
                 {visibleColors.map((color) => (
-                  <Box key={color.shade} flexDirection="row" marginRight={1}>
-                    <Text
+                  <Box key={color.shade} flexDirection="column" marginRight={1}>
+                    {Array(SWATCH_BLOCK_HEIGHT)
+                      .fill(null)
+                      .map(() => SWATCH_BLOCK)
+                      .map((_, i) => (
+                        <Text
+                          key={i}
+                          backgroundColor={color.hex}
+                          color={color.hsl[2] > 55 ? "black" : "white"}
+                        >
+                          {SWATCH_BLOCK}
+                        </Text>
+                      ))}
+                    {/*<Text
                       backgroundColor={color.hex}
                       color={color.hsl[2] > 55 ? "black" : "white"}
                     >
                       {SWATCH_BLOCK}
-                    </Text>
+                    </Text>*/}
                     <Text dimColor> {color.shade}</Text>
                   </Box>
                 ))}
