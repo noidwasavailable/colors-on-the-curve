@@ -1,7 +1,7 @@
 // @ts-ignore
 import { getColorName, initColors, ORIGINAL_COLORS, type FORMATTED_COLOR } from 'ntc-ts';
 import { applyCurve, hslToRgb, rgbToHex, makeCmykSafe, rgbToCmyk } from './colorMath.js';
-import type { PaletteConfig, PaletteResult, ColorResult } from './types.js';
+import type { PaletteConfig, PaletteResult, ColorResult, PalettesConfig } from './types.js';
 
 // Init the available colors for ntc-ts
 initColors(ORIGINAL_COLORS);
@@ -81,4 +81,49 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     name: paletteName,
     colors
   };
+}
+
+export function expandPalettesConfig(config: PalettesConfig): PaletteConfig[] {
+  const result: PaletteConfig[] = [];
+  const { hues, namePrefix, names, ...rest } = config;
+
+  const resolveName = (index: number) => {
+    const customName = names?.[index];
+    if (namePrefix && customName) {
+      const combined = `${namePrefix}-${customName}`;
+      return combined.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
+    } else if (customName) {
+      return customName;
+    } else if (namePrefix) {
+      return `${namePrefix}-${index + 1}`;
+    }
+    return undefined;
+  };
+  
+  if (hues.count <= 0) return [];
+  if (hues.count === 1) {
+    result.push({
+      ...rest,
+      baseHue: hues.start,
+      name: resolveName(0)
+    });
+    return result;
+  }
+  
+  for (let i = 0; i < hues.count; i++) {
+    const t = i / (hues.count - 1);
+    const progression = hues.curve ? applyCurve(t, hues.curve) : t;
+    const baseHue = (hues.start + (hues.end - hues.start) * progression) % 360;
+    
+    // Ensure hue is positive
+    const finalHue = baseHue < 0 ? baseHue + 360 : baseHue;
+    
+    result.push({
+      ...rest,
+      baseHue: finalHue,
+      name: resolveName(i)
+    });
+  }
+  
+  return result;
 }

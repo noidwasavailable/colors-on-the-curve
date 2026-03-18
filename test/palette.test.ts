@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 import { applyCurve, hslToRgb, rgbToCmyk, makeCmykSafe } from "../src/colorMath.js";
-import { generatePalette } from "../src/generator.js";
-import type { PaletteConfig } from "../src/types.js";
+import { generatePalette, expandPalettesConfig } from "../src/generator.js";
+import type { PaletteConfig, PalettesConfig } from "../src/types.js";
 
 describe("Color Math", () => {
   test("applyCurve linear", () => {
@@ -92,4 +92,71 @@ describe("Generator", () => {
     // At t=1.0, hueCurve(1.0) = 0. h = 200 + 100*0 = 200
     expect(result.colors[2]!.hsl[0]).toBe(200);
   });
+
+  test("expandPalettesConfig generates correct number of configurations", () => {
+    const config: PalettesConfig = {
+      namePrefix: "Test Suite",
+      names: ["A", "B Object", "C"],
+      hues: { start: 0, end: 100, count: 3, curve: "linear" },
+      saturation: { peak: 100, minDark: 50, minLight: 50, curve: "linear" },
+      lightness: { start: 90, end: 10, curve: "linear" },
+      shades: [100, 500, 900],
+      cmykSafe: true
+    };
+
+    const expanded = expandPalettesConfig(config);
+    expect(expanded.length).toBe(3);
+    
+    expect(expanded[0]!.name).toBe("test-suite-a");
+    expect(expanded[1]!.name).toBe("test-suite-b-object");
+    expect(expanded[2]!.name).toBe("test-suite-c");
+    
+    expect(expanded[0]!.baseHue).toBe(0);
+    expect(expanded[1]!.baseHue).toBe(50);
+    expect(expanded[2]!.baseHue).toBe(100);
+  });
+
+  test("expandPalettesConfig resolves mixed naming and fallback index naming", () => {
+    const config: PalettesConfig = {
+      namePrefix: "Blue",
+      names: ["A", "B Object", "C"],
+      hues: { start: 0, end: 100, count: 5, curve: "linear" },
+      saturation: { peak: 100, minDark: 50, minLight: 50, curve: "linear" },
+      lightness: { start: 90, end: 10, curve: "linear" },
+      shades: [100, 500],
+    };
+
+    const expanded = expandPalettesConfig(config);
+    expect(expanded.length).toBe(5);
+    
+    // First 3 should use kebab case combination
+    expect(expanded[0]!.name).toBe("blue-a");
+    expect(expanded[1]!.name).toBe("blue-b-object");
+    expect(expanded[2]!.name).toBe("blue-c");
+    
+    // Last 2 should fallback to namePrefix + index (1-based)
+    expect(expanded[3]!.name).toBe("Blue-4");
+    expect(expanded[4]!.name).toBe("Blue-5");
+  });
+
+  test("expandPalettesConfig handles missing prefix with fewer names than hues", () => {
+    const config: PalettesConfig = {
+      names: ["Only One"],
+      hues: { start: 0, end: 100, count: 3, curve: "linear" },
+      saturation: { peak: 100, minDark: 50, minLight: 50, curve: "linear" },
+      lightness: { start: 90, end: 10, curve: "linear" },
+      shades: [100, 500],
+    };
+
+    const expanded = expandPalettesConfig(config);
+    expect(expanded.length).toBe(3);
+    
+    // First should use the exact provided name
+    expect(expanded[0]!.name).toBe("Only One");
+    
+    // Afterwards should be undefined because both prefix & custom names are missing
+    expect(expanded[1]!.name).toBeUndefined();
+    expect(expanded[2]!.name).toBeUndefined();
+  });
 });
+

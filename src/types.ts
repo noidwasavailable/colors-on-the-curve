@@ -37,3 +37,24 @@ export interface PaletteResult {
   name: string;
   colors: ColorResult[];
 }
+
+export interface HueRangeConfig {
+  start: number;
+  end: number;
+  count: number;
+  curve?: CurveType;
+}
+
+export interface PalettesConfig {
+  namePrefix?: string;
+  names?: string[];
+  hues: HueRangeConfig;
+  hueShift?: number;
+  hueCurve?: CurveType;
+  saturation: SaturationConfig;
+  lightness: CurveConfig;
+  shades: number[];
+  cmykSafe?: boolean;
+}
+
+export type ConfigInput = PaletteConfig | PaletteConfig[] | PalettesConfig;

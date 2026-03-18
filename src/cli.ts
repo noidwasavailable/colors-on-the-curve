@@ -1,6 +1,6 @@
 import { resolve, basename, extname, join } from 'path';
-import { generatePalette } from './generator.js';
-import type { PaletteConfig } from './types.js';
+import { generatePalette, expandPalettesConfig } from './generator.js';
+import type { PaletteConfig, ConfigInput, PalettesConfig } from './types.js';
 import { exportFigmaTokens } from './figmaExporter.js';
 import { mkdir, writeFile } from 'fs/promises';
 
@@ -21,14 +21,26 @@ async function main() {
   
   try {
     const configModule = await import(fullPath);
-    const configs: PaletteConfig | PaletteConfig[] = configModule.default || configModule.config;
+    const configs: ConfigInput = configModule.default || configModule.config;
 
     if (!configs) {
       console.error('Config file must export a default object/array or a named export "config".');
       process.exit(1);
     }
 
-    const configArray = Array.isArray(configs) ? configs : [configs];
+    let configArray: PaletteConfig[] = [];
+    if (Array.isArray(configs)) {
+      configArray = configs.flatMap(c => 
+        ('hues' in c && c.hues && typeof c.hues === 'object') 
+          ? expandPalettesConfig(c as PalettesConfig) 
+          : c as PaletteConfig
+      );
+    } else if ('hues' in configs && configs.hues && typeof configs.hues === 'object') {
+      configArray = expandPalettesConfig(configs as PalettesConfig);
+    } else {
+      configArray = [configs as PaletteConfig];
+    }
+    
     const results = configArray.map(generatePalette);
 
     const baseName = basename(configPath!, extname(configPath!));
