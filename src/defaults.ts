@@ -7,16 +7,16 @@ import type {
 } from "./types";
 
 export const defaultSaturation: SaturationConfig = {
-  peak: 100,
-  minDark: 30,
-  minLight: 15,
-  curve: "parabolic",
+  peak: 85,
+  minDark: 60,
+  minLight: 90,
+  curve: "easeInOut",
 };
 
 export const defaultLightness: CurveConfig = {
-  start: 95,
-  end: 10,
-  curve: "easeInOut",
+  start: 90,
+  end: 15,
+  curve: "linear",
 };
 
 export const defaultShades = [
