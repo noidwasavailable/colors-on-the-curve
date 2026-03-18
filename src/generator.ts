@@ -1,9 +1,9 @@
-// @ts-ignore
 import {
   getColorName,
   initColors,
   ORIGINAL_COLORS,
   type FORMATTED_COLOR,
+  // @ts-ignore import doesnt have type definitions
 } from "ntc-ts";
 import {
   applyCurve,
