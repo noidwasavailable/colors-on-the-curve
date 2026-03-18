@@ -1,141 +1,118 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import type { ConfigInput, PaletteConfig, PalettesConfig } from "../types";
+import {
+  EDITOR_PROPERTIES,
+  UI_TEXT,
+  type EditorPropertyMeta,
+  type PropertyPath,
+  type UiMode,
+} from "../constants";
 
 interface EditorProps {
   config: any;
-  mode: "SINGLE" | "ARRAY" | "SPECTRUM";
+  mode: UiMode;
   onChange: (updater: (prev: any) => any) => void;
 }
 
+function getPathValue(obj: any, path: PropertyPath): any {
+  const [firstKey, secondKey] = path;
+  if (secondKey === undefined) return obj?.[firstKey];
+  return obj?.[firstKey]?.[secondKey];
+}
+
+function setPathValue(obj: any, path: PropertyPath, value: any): any {
+  const [firstKey, secondKey] = path;
+  const next = { ...obj };
+
+  if (secondKey === undefined) {
+    next[firstKey] = value;
+    return next;
+  }
+
+  next[firstKey] = { ...(next[firstKey] ?? {}), [secondKey]: value };
+  return next;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 export function Editor({ config, mode, onChange }: EditorProps) {
-  const isSpectrum = mode === "SPECTRUM";
-
-  const properties = isSpectrum
-    ? [
-        {
-          label: "Hues Count",
-          val: config.hues?.count ?? 1,
-          step: 1,
-          min: 1,
-          max: 20,
-          path: ["hues", "count"],
-        },
-        {
-          label: "Hues Start",
-          val: config.hues?.start ?? 0,
-          step: 1,
-          min: 0,
-          max: 360,
-          path: ["hues", "start"],
-        },
-        {
-          label: "Hues End",
-          val: config.hues?.end ?? 360,
-          step: 1,
-          min: 0,
-          max: 360,
-          path: ["hues", "end"],
-        },
-      ]
-    : [
-        {
-          label: "Base Hue",
-          val: config.baseHue ?? 0,
-          step: 1,
-          min: 0,
-          max: 360,
-          path: ["baseHue"],
-        },
-      ];
-
-  const commonProperties = [
-    {
-      label: "Hue Shift",
-      val: config.hueShift ?? 0,
-      step: 1,
-      min: -360,
-      max: 360,
-      path: ["hueShift"],
-    },
-    {
-      label: "Sat Peak",
-      val: config.saturation?.peak ?? 100,
-      step: 1,
-      min: 0,
-      max: 100,
-      path: ["saturation", "peak"],
-    },
-    {
-      label: "Sat Min Dark",
-      val: config.saturation?.minDark ?? 30,
-      step: 1,
-      min: 0,
-      max: 100,
-      path: ["saturation", "minDark"],
-    },
-    {
-      label: "Sat Min Light",
-      val: config.saturation?.minLight ?? 15,
-      step: 1,
-      min: 0,
-      max: 100,
-      path: ["saturation", "minLight"],
-    },
-    {
-      label: "Light Start",
-      val: config.lightness?.start ?? 95,
-      step: 1,
-      min: 0,
-      max: 100,
-      path: ["lightness", "start"],
-    },
-    {
-      label: "Light End",
-      val: config.lightness?.end ?? 10,
-      step: 1,
-      min: 0,
-      max: 100,
-      path: ["lightness", "end"],
-    },
-  ];
-
-  const allProps = [...properties, ...commonProperties];
-
   const [activePropIndex, setActivePropIndex] = useState(0);
 
+  const allProps = useMemo<readonly EditorPropertyMeta[]>(() => {
+    const modeSpecific =
+      mode === "SPECTRUM"
+        ? EDITOR_PROPERTIES.spectrumOnly
+        : EDITOR_PROPERTIES.singleOnly;
+
+    return [...modeSpecific, ...EDITOR_PROPERTIES.common];
+  }, [mode]);
+
+  const safeActiveIndex = clamp(
+    activePropIndex,
+    0,
+    Math.max(0, allProps.length - 1),
+  );
+  const activeProp = allProps[safeActiveIndex];
+
   useInput((input, key) => {
-    // Only capture up/down and left/right. Everything else handled by app.
     if (key.upArrow) {
-      setActivePropIndex(Math.max(0, activePropIndex - 1));
-    } else if (key.downArrow) {
-      setActivePropIndex(Math.min(allProps.length - 1, activePropIndex + 1));
-    } else if (key.leftArrow || key.rightArrow) {
-      const prop = allProps[activePropIndex];
-      if (!prop) return;
+      setActivePropIndex((prev) => Math.max(0, prev - 1));
+      return;
+    }
 
-      const sign = key.rightArrow ? 1 : -1;
-      const amount = key.shift ? prop.step * 10 : prop.step;
-      const newVal = Math.min(
-        prop.max,
-        Math.max(prop.min, prop.val + sign * amount),
+    if (key.downArrow) {
+      setActivePropIndex((prev) => Math.min(allProps.length - 1, prev + 1));
+      return;
+    }
+
+    const prop = allProps[activePropIndex];
+    if (!prop) return;
+
+    const isAdjustKey = key.leftArrow || key.rightArrow;
+    const isToggleKey = input === " " || key.return;
+    if (!isAdjustKey && !isToggleKey) return;
+
+    const direction = key.rightArrow ? 1 : key.leftArrow ? -1 : 0;
+
+    if (prop.kind === "number") {
+      if (!isAdjustKey) return;
+
+      const currentRaw = getPathValue(config, prop.path);
+      const current = typeof currentRaw === "number" ? currentRaw : prop.min;
+      const delta = (key.shift ? prop.step * 10 : prop.step) * direction;
+      const nextValue = clamp(current + delta, prop.min, prop.max);
+      if (nextValue === current) return;
+
+      onChange((prev) => setPathValue(prev, prop.path, nextValue));
+      return;
+    }
+
+    if (prop.kind === "toggle") {
+      const currentRaw = getPathValue(config, prop.path);
+      const current = Boolean(currentRaw);
+      onChange((prev) => setPathValue(prev, prop.path, !current));
+      return;
+    }
+
+    if (prop.kind === "select") {
+      if (!isAdjustKey) return;
+
+      const currentRaw = getPathValue(config, prop.path);
+      const currentIndex = prop.options.findIndex(
+        (opt) => opt.value === currentRaw,
       );
+      const fallbackIndex = currentIndex >= 0 ? currentIndex : 0;
+      const nextIndex = clamp(
+        fallbackIndex + direction,
+        0,
+        prop.options.length - 1,
+      );
+      const nextOption = prop.options[nextIndex];
+      if (!nextOption) return;
 
-      if (newVal !== prop.val) {
-        onChange((prev) => {
-          const next = { ...prev };
-          const [firstKey, secondKey] = prop.path;
-          if (!firstKey) return next;
-
-          if (secondKey === undefined) {
-            next[firstKey] = newVal;
-          } else {
-            next[firstKey] = { ...(next[firstKey] ?? {}), [secondKey]: newVal };
-          }
-
-          return next;
-        });
-      }
+      onChange((prev) => setPathValue(prev, prop.path, nextOption.value));
     }
   });
 
@@ -143,17 +120,42 @@ export function Editor({ config, mode, onChange }: EditorProps) {
     <Box flexDirection="column" paddingX={2} paddingY={1}>
       <Box marginBottom={1}>
         <Text bold underline>
-          Editor Controls
+          {UI_TEXT.editorTitle}
         </Text>
       </Box>
-      {allProps.map((p, i) => (
-        <Box key={p.label}>
-          <Text color={i === activePropIndex ? "green" : undefined}>
-            {i === activePropIndex ? "> " : "  "}
-            {p.label.padEnd(15, " ")}: {p.val.toString().padStart(4, " ")}
-          </Text>
-        </Box>
-      ))}
+
+      {allProps.map((prop, index) => {
+        const isActive = index === safeActiveIndex;
+        const rawValue = getPathValue(config, prop.path);
+
+        let renderedValue = "";
+        if (prop.kind === "number") {
+          const numberValue =
+            typeof rawValue === "number" ? rawValue : prop.min;
+          renderedValue = numberValue.toString();
+        } else if (prop.kind === "toggle") {
+          const enabled = Boolean(rawValue);
+          renderedValue = enabled
+            ? (prop.onLabel ?? "ON")
+            : (prop.offLabel ?? "OFF");
+        } else {
+          const selected = prop.options.find((o) => o.value === rawValue);
+          renderedValue = selected?.label ?? prop.options[0]?.label ?? "";
+        }
+
+        return (
+          <Box key={prop.id}>
+            <Text color={isActive ? "green" : undefined}>
+              {isActive ? "> " : "  "}
+              {prop.label.padEnd(15, " ")}: {renderedValue}
+            </Text>
+          </Box>
+        );
+      })}
+
+      <Box marginTop={1}>
+        <Text color="yellow">{activeProp?.description ?? ""}</Text>
+      </Box>
     </Box>
   );
 }

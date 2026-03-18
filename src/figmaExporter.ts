@@ -1,4 +1,4 @@
-import type { PaletteResult } from './types.js';
+import type { PaletteResult } from "./types";
 
 export function exportFigmaTokens(palettes: PaletteResult | PaletteResult[]) {
   const arr = Array.isArray(palettes) ? palettes : [palettes];
@@ -7,31 +7,31 @@ export function exportFigmaTokens(palettes: PaletteResult | PaletteResult[]) {
   for (const palette of arr) {
     // Figma usually likes single words or kebab-case for tokens.
     // Use the palette name as the base prefix.
-    const paletteName = palette.name.toLowerCase().replace(/\s+/g, '-');
+    const paletteName = palette.name.toLowerCase().replace(/\s+/g, "-");
     for (const color of palette.colors) {
       const tokenName = `${paletteName}-${color.shade}`;
       result[tokenName] = {
-        "$type": "color",
-        "$value": {
-          "colorSpace": "srgb",
-          "components": [
+        $type: "color",
+        $value: {
+          colorSpace: "srgb",
+          components: [
             color.rgb[0] / 255,
             color.rgb[1] / 255,
-            color.rgb[2] / 255
+            color.rgb[2] / 255,
           ],
-          "alpha": 1,
-          "hex": color.hex.toUpperCase()
+          alpha: 1,
+          hex: color.hex.toUpperCase(),
         },
-        "$extensions": {
+        $extensions: {
           "com.figma.scopes": ["ALL_SCOPES"],
-          "com.figma.isOverride": true
-        }
+          "com.figma.isOverride": true,
+        },
       };
     }
   }
 
   result["$extensions"] = {
-    "com.figma.modeName": "Mode 1"
+    "com.figma.modeName": "Mode 1",
   };
 
   return result;

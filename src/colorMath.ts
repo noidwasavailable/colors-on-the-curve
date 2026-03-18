@@ -1,4 +1,4 @@
-import type { CurveType } from './types.js';
+import type { CurveType } from "./types";
 
 /**
  * Normalizes 't' between 0 and 1, applying the requested curve.
@@ -7,15 +7,15 @@ import type { CurveType } from './types.js';
  */
 export function applyCurve(t: number, curve: CurveType): number {
   switch (curve) {
-    case 'linear':
+    case "linear":
       return t;
-    case 'easeIn':
+    case "easeIn":
       return t * t;
-    case 'easeOut':
+    case "easeOut":
       return t * (2 - t);
-    case 'easeInOut':
+    case "easeInOut":
       return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    case 'parabolic':
+    case "parabolic":
       // 0 at t=0, 1 at t=0.5, 0 at t=1
       return 1 - Math.pow(2 * t - 1, 2);
     default:
@@ -30,7 +30,11 @@ export function applyCurve(t: number, curve: CurveType): number {
  * @param l Lightness 0-100
  * @returns [R, G, B] each 0-255
  */
-export function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+export function hslToRgb(
+  h: number,
+  s: number,
+  l: number,
+): [number, number, number] {
   s /= 100;
   l /= 100;
   const k = (n: number) => (n + h / 30) % 12;
@@ -40,7 +44,7 @@ export function hslToRgb(h: number, s: number, l: number): [number, number, numb
   return [
     Math.round(f(0) * 255),
     Math.round(f(8) * 255),
-    Math.round(f(4) * 255)
+    Math.round(f(4) * 255),
   ];
 }
 
@@ -48,7 +52,7 @@ export function hslToRgb(h: number, s: number, l: number): [number, number, numb
  * Converts RGB to HEX
  */
 export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (c: number) => Math.round(c).toString(16).padStart(2, '0');
+  const toHex = (c: number) => Math.round(c).toString(16).padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
@@ -59,10 +63,14 @@ export function rgbToHex(r: number, g: number, b: number): string {
  * @param b 0-255
  * @returns [C, M, Y, K] each 0-100
  */
-export function rgbToCmyk(r: number, g: number, b: number): [number, number, number, number] {
-  let c = 1 - (r / 255);
-  let m = 1 - (g / 255);
-  let y = 1 - (b / 255);
+export function rgbToCmyk(
+  r: number,
+  g: number,
+  b: number,
+): [number, number, number, number] {
+  let c = 1 - r / 255;
+  let m = 1 - g / 255;
+  let y = 1 - b / 255;
   const k = Math.min(c, Math.min(m, y));
 
   if (k === 1) {
@@ -77,25 +85,40 @@ export function rgbToCmyk(r: number, g: number, b: number): [number, number, num
     Math.round(c * 100),
     Math.round(m * 100),
     Math.round(y * 100),
-    Math.round(k * 100)
+    Math.round(k * 100),
   ];
 }
 
 /**
  * RGB to HSL inside CMYK conversions
  */
-export function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-  
+export function rgbToHsl(
+  r: number,
+  g: number,
+  b: number,
+): [number, number, number] {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let h = 0,
+    s = 0,
+    l = (max + min) / 2;
+
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
     }
     h /= 6;
   }
@@ -103,10 +126,20 @@ export function rgbToHsl(r: number, g: number, b: number): [number, number, numb
 }
 
 /**
- * Takes RGB input and evaluates if TAC <= 300%. 
+ * Takes RGB input and evaluates if TAC <= 300%.
  * If it exceeds standard CMYK limits, it desaturates slightly until it fits, modifying both CMYK and RGB.
  */
-export function makeCmykSafe(r: number, g: number, b: number, maxTac: number = 300): { isSafe: boolean; rgb: [number, number, number], cmyk: [number, number, number, number], hsl: [number, number, number] } {
+export function makeCmykSafe(
+  r: number,
+  g: number,
+  b: number,
+  maxTac: number = 300,
+): {
+  isSafe: boolean;
+  rgb: [number, number, number];
+  cmyk: [number, number, number, number];
+  hsl: [number, number, number];
+} {
   let [c, m, y, k] = rgbToCmyk(r, g, b);
   let tac = c + m + y + k;
   let isSafe = tac <= maxTac;

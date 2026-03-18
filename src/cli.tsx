@@ -2,15 +2,19 @@ import { resolve, basename, extname, join } from "path";
 import { mkdir, writeFile } from "fs/promises";
 import React from "react";
 import { render } from "ink";
-import { App } from "./ui/App.js";
-import type { ConfigInput } from "./types.js";
-import { defaultPaletteConfig } from "./defaults.js";
+import { App } from "./ui/App";
+import type { ConfigInput } from "./types";
+import { defaultPaletteConfig } from "./defaults";
+
+interface SaveOptions {
+  exportTokens?: boolean;
+}
 
 async function main() {
   const args = process.argv.slice(2);
   const configPath = args.find((a) => !a.startsWith("--"));
   const outDirArg = args.find((a) => a.startsWith("--out-dir="));
-  const exportTokens = args.includes("--tokens");
+  const exportTokensFromFlag = args.includes("--tokens");
 
   const outDir = outDirArg?.split("=")[1] || "data";
 
@@ -39,8 +43,13 @@ async function main() {
 
     const outDirPath = resolve(process.cwd(), outDir);
 
-    const onSave = async (outputData: any, tokenData?: any) => {
+    const onSave = async (
+      outputData: any,
+      tokenData?: any,
+      options?: SaveOptions,
+    ) => {
       await mkdir(outDirPath, { recursive: true });
+
       const outFilename = baseName + ".json";
       const outFilePath = join(outDirPath, outFilename);
       await writeFile(
@@ -49,9 +58,12 @@ async function main() {
         "utf-8",
       );
 
+      const shouldExportTokens = options?.exportTokens ?? exportTokensFromFlag;
+
       let tokensSaved = false;
       const tokensFilePath = join(outDirPath, baseName + ".tokens.json");
-      if (exportTokens && tokenData) {
+
+      if (shouldExportTokens && tokenData) {
         await writeFile(
           tokensFilePath,
           JSON.stringify(tokenData, null, 2),
@@ -59,6 +71,7 @@ async function main() {
         );
         tokensSaved = true;
       }
+
       return { outFilePath, tokensSaved, tokensFilePath };
     };
 
@@ -66,7 +79,7 @@ async function main() {
       <App
         initialConfig={initialConfig}
         onSave={onSave}
-        exportTokens={exportTokens}
+        exportTokens={exportTokensFromFlag}
       />,
     );
   } catch (err) {

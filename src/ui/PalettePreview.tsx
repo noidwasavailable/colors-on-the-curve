@@ -1,53 +1,154 @@
-import React from 'react';
-import { Box, Text } from 'ink';
-import { generatePalette, expandPalettesConfig } from '../generator.js';
-import type { ConfigInput, PaletteConfig, PalettesConfig, PaletteResult } from '../types.js';
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, Text, useInput } from "ink";
+import { generatePalette, expandPalettesConfig } from "../generator";
+import type {
+  ConfigInput,
+  PaletteConfig,
+  PalettesConfig,
+  PaletteResult,
+} from "../types";
+import { PREVIEW_UI, UI_TEXT, type UiMode } from "../constants";
 
 interface PalettePreviewProps {
   config: ConfigInput;
-  mode: 'SINGLE' | 'ARRAY' | 'SPECTRUM';
+  mode: UiMode;
   activeIndex: number;
 }
 
-export function PalettePreview({ config, mode, activeIndex }: PalettePreviewProps) {
-  let palettes: PaletteResult[] = [];
-  try {
-    if (mode === 'SINGLE') {
-      palettes = [generatePalette(config as PaletteConfig)];
-    } else if (mode === 'ARRAY') {
-      const arr = config as PaletteConfig[];
-      if (arr[activeIndex]) {
-        palettes = [generatePalette(arr[activeIndex] as PaletteConfig)];
+const VISIBLE_SWATCH_COUNT = 8;
+const SWATCH_BLOCK = "        ";
+
+export function PalettePreview({
+  config,
+  mode,
+  activeIndex,
+}: PalettePreviewProps) {
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  const previewState = useMemo(() => {
+    let palettes: PaletteResult[] = [];
+    let previewError: string | null = null;
+
+    try {
+      if (mode === "SINGLE") {
+        palettes = [generatePalette(config as PaletteConfig)];
+      } else if (mode === "ARRAY") {
+        const arr = config as PaletteConfig[];
+        const selected = arr[activeIndex];
+        palettes = selected ? [generatePalette(selected)] : [];
+      } else {
+        const expanded = expandPalettesConfig(config as PalettesConfig);
+        palettes = expanded.map(generatePalette);
       }
-    } else if (mode === 'SPECTRUM') {
-      const expanded = expandPalettesConfig(config as PalettesConfig);
-      palettes = expanded.map(generatePalette);
+    } catch (error) {
+      palettes = [];
+      previewError =
+        error instanceof Error ? error.message : "Unknown preview error";
     }
-  } catch (e) {
-    return <Text color="red">Error generating palettes: {(e as Error).message}</Text>;
+
+    return { palettes, previewError };
+  }, [config, mode, activeIndex]);
+
+  const { palettes, previewError } = previewState;
+
+  const maxColors = useMemo(
+    () =>
+      palettes.reduce(
+        (max, palette) => Math.max(max, palette.colors.length),
+        0,
+      ),
+    [palettes],
+  );
+
+  const maxOffset = Math.max(0, maxColors - VISIBLE_SWATCH_COUNT);
+
+  useEffect(() => {
+    setScrollOffset((prev) => Math.min(prev, maxOffset));
+  }, [maxOffset]);
+
+  useInput((input) => {
+    if (input === "," || input === "h") {
+      setScrollOffset((prev) => Math.max(0, prev - 1));
+      return;
+    }
+
+    if (input === "." || input === "l") {
+      setScrollOffset((prev) => Math.min(maxOffset, prev + 1));
+    }
+  });
+
+  if (previewError) {
+    return (
+      <Text color="red">
+        {UI_TEXT.generateErrorPrefix} {previewError}
+      </Text>
+    );
   }
 
-  if (!palettes.length) return <Text color="red">No palettes generated.</Text>;
+  if (!palettes.length) {
+    return <Text color="red">{UI_TEXT.noPalettesGenerated}</Text>;
+  }
+
+  const visibleStart = scrollOffset + 1;
+  const visibleEnd = Math.min(scrollOffset + VISIBLE_SWATCH_COUNT, maxColors);
 
   return (
-    <Box flexDirection="column" gap={1}>
-      {palettes.map((palette, i) => (
-        <React.Fragment key={palette.name || i}>
-          <Text bold color="cyan">{palette.name} {mode === 'ARRAY' ? `(Palette ${activeIndex + 1})` : ''}</Text>
-          <Box flexDirection="row" flexWrap="wrap">
-            {palette.colors.map(color => (
-              <Box key={color.shade} flexDirection="column" alignItems="center" marginRight={1} marginBottom={1}>
-                {/* Visual Swatch */}
-                <Text backgroundColor={color.hex} color={color.hsl[2] > 50 ? 'black' : 'white'}>
-                  {` Aa `}
+    <Box flexDirection="column">
+      {maxOffset > 0 && (
+        <Box marginBottom={1} flexDirection="row">
+          <Text color="gray">{PREVIEW_UI.horizontalOverflowHint}</Text>
+          <Text color="gray">
+            {" "}
+            Scroll: ,/. ({visibleStart}-{visibleEnd} of {maxColors})
+          </Text>
+        </Box>
+      )}
+
+      <Box flexDirection="column">
+        {palettes.map((palette, i) => {
+          const visibleColors = palette.colors.slice(
+            scrollOffset,
+            scrollOffset + VISIBLE_SWATCH_COUNT,
+          );
+          const hasLeft = scrollOffset > 0;
+          const hasRight =
+            scrollOffset + VISIBLE_SWATCH_COUNT < palette.colors.length;
+
+          return (
+            <Box
+              key={`${palette.name}-${i}`}
+              flexDirection="row"
+              marginBottom={0}
+            >
+              <Box width={20}>
+                <Text bold color="cyan">
+                  {mode === "ARRAY"
+                    ? `${palette.name} (${activeIndex + 1})`
+                    : palette.name}
                 </Text>
-                <Text dimColor>{color.shade}</Text>
-                <Text dimColor>{color.hex}</Text>
               </Box>
-            ))}
-          </Box>
-        </React.Fragment>
-      ))}
+
+              <Text color="gray">{hasLeft ? "‹ " : "  "}</Text>
+
+              <Box flexDirection="row">
+                {visibleColors.map((color) => (
+                  <Box key={color.shade} flexDirection="row" marginRight={1}>
+                    <Text
+                      backgroundColor={color.hex}
+                      color={color.hsl[2] > 55 ? "black" : "white"}
+                    >
+                      {SWATCH_BLOCK}
+                    </Text>
+                    <Text dimColor> {color.shade}</Text>
+                  </Box>
+                ))}
+              </Box>
+
+              <Text color="gray">{hasRight ? " ›" : ""}</Text>
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 }
