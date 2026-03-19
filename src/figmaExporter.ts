@@ -1,5 +1,7 @@
 import type { PaletteResult } from "./types";
 
+const CONNECTION_CHARACTER = "/"
+
 export function exportFigmaTokens(palettes: PaletteResult | PaletteResult[]) {
   const arr = Array.isArray(palettes) ? palettes : [palettes];
   const result: any = {};
@@ -7,9 +9,9 @@ export function exportFigmaTokens(palettes: PaletteResult | PaletteResult[]) {
   for (const palette of arr) {
     // Figma usually likes single words or kebab-case for tokens.
     // Use the palette name as the base prefix.
-    const paletteName = palette.name.toLowerCase().replace(/\s+/g, "-");
+    const paletteName = palette.name.toLowerCase().replace(/\s+/g, CONNECTION_CHARACTER);
     for (const color of palette.colors) {
-      const tokenName = `${paletteName}-${color.shade}`;
+      const tokenName = `${paletteName}${CONNECTION_CHARACTER}${color.shade}`;
       result[tokenName] = {
         $type: "color",
         $value: {
