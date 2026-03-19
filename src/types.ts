@@ -22,6 +22,7 @@ export interface PaletteConfig {
   lightness: CurveConfig;   // typically start = 95 (lightest), end = 10 (darkest)
   shades: number[];         // e.g., [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
   cmykSafe?: boolean;       // if true, forces output to remain within standard CMYK limits (TAC <= 300%)
+  cmykReconciliation?: "clamp" | "scale-down";
 }
 
 export interface ColorResult {
@@ -55,6 +56,7 @@ export interface PalettesConfig {
   lightness: CurveConfig;
   shades: number[];
   cmykSafe?: boolean;
+  cmykReconciliation?: "clamp" | "scale-down";
 }
 
 export type ConfigInput = PaletteConfig | PaletteConfig[] | PalettesConfig;

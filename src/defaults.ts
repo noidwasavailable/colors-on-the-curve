@@ -31,12 +31,13 @@ export const defaultPaletteConfig: Omit<PaletteConfig, "name"> = {
   lightness: defaultLightness,
   shades: defaultShades,
   cmykSafe: false,
+  cmykReconciliation: "scale-down",
 };
 
 export const defaultHues: HueRangeConfig = {
-  start: 0,
-  end: 360,
-  count: 1,
+  start: 5,
+  end: 355,
+  count: 11,
   curve: "linear",
 };
 
@@ -51,4 +52,5 @@ export const defaultPalettesConfig: Omit<
   lightness: defaultLightness,
   shades: defaultShades,
   cmykSafe: false,
+  cmykReconciliation: "scale-down",
 };

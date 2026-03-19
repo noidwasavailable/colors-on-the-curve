@@ -13,6 +13,10 @@ interface PalettePreviewProps {
   config: ConfigInput;
   mode: UiMode;
   activeIndex: number;
+  previewState: {
+    palettes: PaletteResult[];
+    previewError: string | null;
+  };
 }
 
 const VISIBLE_SWATCH_COUNT = 11;
@@ -24,31 +28,16 @@ export function PalettePreview({
   config,
   mode,
   activeIndex,
+  previewState,
 }: PalettePreviewProps) {
   const [scrollOffset, setScrollOffset] = useState(0);
 
-  const previewState = useMemo(() => {
-    let palettes: PaletteResult[] = [];
-    let previewError: string | null = null;
-
-    try {
-      if (mode === "SINGLE") {
-        palettes = [generatePalette(config as PaletteConfig)];
-      } else if (mode === "ARRAY") {
-        const arr = config as PaletteConfig[];
-        const selected = arr[activeIndex];
-        palettes = selected ? [generatePalette(selected)] : [];
-      } else {
-        const expanded = expandPalettesConfig(config as PalettesConfig);
-        palettes = expanded.map(generatePalette);
-      }
-    } catch (error) {
-      palettes = [];
-      previewError =
-        error instanceof Error ? error.message : "Unknown preview error";
+  const isCmykSafeOn = useMemo(() => {
+    if (mode === "ARRAY") {
+      const arr = config as PaletteConfig[];
+      return arr[activeIndex]?.cmykSafe ?? false;
     }
-
-    return { palettes, previewError };
+    return (config as any).cmykSafe ?? false;
   }, [config, mode, activeIndex]);
 
   const { palettes, previewError } = previewState;
@@ -153,7 +142,10 @@ export function PalettePreview({
                     >
                       {SWATCH_BLOCK}
                     </Text>*/}
-                    <Text dimColor> {color.shade}</Text>
+                    <Text
+                      dimColor={!(isCmykSafeOn && !color.isCmykSafe)}
+                      color={isCmykSafeOn && !color.isCmykSafe ? "red" : undefined}
+                    > {color.shade}</Text>
                   </Box>
                 ))}
               </Box>

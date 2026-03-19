@@ -12,6 +12,7 @@ interface EditorProps {
   config: any;
   mode: UiMode;
   onChange: (updater: (prev: any) => any) => void;
+  outOfGamutCount?: number;
 }
 
 function getPathValue(obj: any, path: PropertyPath): any {
@@ -37,7 +38,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-export function Editor({ config, mode, onChange }: EditorProps) {
+export function Editor({ config, mode, onChange, outOfGamutCount }: EditorProps) {
   const [activePropIndex, setActivePropIndex] = useState(0);
 
   const allProps = useMemo<readonly EditorPropertyMeta[]>(() => {
@@ -153,8 +154,11 @@ export function Editor({ config, mode, onChange }: EditorProps) {
         );
       })}
 
-      <Box marginTop={1}>
+      <Box marginTop={1} flexDirection="column">
         <Text color="yellow">{activeProp?.description ?? ""}</Text>
+        {activeProp?.id === "cmykSafe" && config.cmykSafe && outOfGamutCount !== undefined && outOfGamutCount > 0 && (
+          <Text color="red">{outOfGamutCount} colors out of gamut</Text>
+        )}
       </Box>
     </Box>
   );

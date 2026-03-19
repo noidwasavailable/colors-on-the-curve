@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Text, useApp, useInput } from "ink";
 import type { ConfigInput, PaletteConfig, PalettesConfig } from "../types";
 import { defaultPaletteConfig, defaultPalettesConfig } from "../defaults";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
 import { generatePalette, expandPalettesConfig } from "../generator";
+import type { PaletteResult } from "../types";
 import { exportFigmaTokens } from "../figmaExporter";
 import {
   APP_TOGGLES,
@@ -44,6 +45,43 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
   const [status, setStatus] = useState<string>(UI_TEXT.statusEditing);
   const [exportTokensEnabled, setExportTokensEnabled] =
     useState<boolean>(exportTokens);
+
+  const activeConfig =
+    mode === "ARRAY" ? (config as PaletteConfig[])[activeIndex] : config;
+
+  const previewState = useMemo(() => {
+    let palettes: PaletteResult[] = [];
+    let previewError: string | null = null;
+
+    try {
+      if (mode === "SINGLE") {
+        palettes = [generatePalette(config as PaletteConfig)];
+      } else if (mode === "ARRAY") {
+        const arr = config as PaletteConfig[];
+        const selected = arr[activeIndex];
+        palettes = selected ? [generatePalette(selected)] : [];
+      } else {
+        const expanded = expandPalettesConfig(config as PalettesConfig);
+        palettes = expanded.map(generatePalette);
+      }
+    } catch (error) {
+      palettes = [];
+      previewError =
+        error instanceof Error ? error.message : "Unknown preview error";
+    }
+
+    return { palettes, previewError };
+  }, [config, mode, activeIndex]);
+
+  const outOfGamutCount = useMemo(() => {
+    let count = 0;
+    for (const p of previewState.palettes) {
+      for (const c of p.colors) {
+        if (!c.isCmykSafe) count++;
+      }
+    }
+    return count;
+  }, [previewState.palettes]);
 
   useEffect(() => {
     if (Array.isArray(initialConfig)) {
@@ -229,9 +267,6 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
     );
   }
 
-  const activeConfig =
-    mode === "ARRAY" ? (config as PaletteConfig[])[activeIndex] : config;
-
   const onUpdateConfig = (updater: (prev: any) => any) => {
     setConfig((prev) => {
       if (mode === "ARRAY") {
@@ -269,6 +304,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
             config={activeConfig || defaultPaletteConfig}
             mode={mode}
             onChange={onUpdateConfig}
+            outOfGamutCount={outOfGamutCount}
           />
         </Box>
 
@@ -284,6 +320,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
             config={config || defaultPaletteConfig}
             mode={mode}
             activeIndex={activeIndex}
+            previewState={previewState}
           />
         </Box>
       </Box>

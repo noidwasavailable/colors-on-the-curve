@@ -255,6 +255,17 @@ export const EDITOR_PROPERTIES = {
       onLabel: "ON",
       offLabel: "OFF",
     },
+    {
+      id: "cmykReconciliation",
+      kind: "select",
+      label: "CMYK Reconcile",
+      description: "Method to reconcile out-of-gamut colors",
+      path: ["cmykReconciliation"] as const,
+      options: [
+        { value: "scale-down", label: "Scale Down" },
+        { value: "clamp", label: "Clamp" },
+      ],
+    },
   ] as const satisfies readonly EditorPropertyMeta[],
 } as const;
 

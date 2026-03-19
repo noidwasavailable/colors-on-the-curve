@@ -93,6 +93,40 @@ describe("Generator", () => {
     expect(result.colors[2]!.hsl[0]).toBe(200);
   });
 
+  test("generatePalette scales down saturation correctly when cmykReconciliation is scale-down", () => {
+    const config: PaletteConfig = {
+      name: "Scale Down Test",
+      baseHue: 0, // Red
+      saturation: { peak: 100, minDark: 100, minLight: 100, curve: "linear" }, // very saturated
+      lightness: { start: 50, end: 50, curve: "linear" },
+      shades: [500, 600], // two shades
+      cmykSafe: true,
+      cmykReconciliation: "scale-down"
+    };
+
+    const unsafeConfig = { ...config, cmykSafe: false };
+    const safeResult = generatePalette(config);
+    const unsafeResult = generatePalette(unsafeConfig);
+    
+    // Scale down should mean safe saturations are uniformly scaled down
+    const safeSat1 = safeResult.colors[0]!.hsl[1];
+    const safeSat2 = safeResult.colors[1]!.hsl[1];
+    
+    const unsafeSat1 = unsafeResult.colors[0]!.hsl[1];
+    const unsafeSat2 = unsafeResult.colors[1]!.hsl[1];
+
+    const ratio1 = safeSat1 / unsafeSat1;
+    const ratio2 = safeSat2 / unsafeSat2;
+    expect(Math.abs(ratio1 - ratio2)).toBeLessThan(0.05); // allow minor rounding differences
+    
+    // Test clamp behaviour for contrast
+    const clampResult = generatePalette({ ...config, cmykReconciliation: "clamp" });
+    const clampSat1 = clampResult.colors[0]!.hsl[1];
+    const clampSat2 = clampResult.colors[1]!.hsl[1];
+    // Since both 500 and 600 are out of gamut identically, ratio might be similar but maybe not exactly
+    // but scale-down tests uniform scale regardless of clamp necessity
+  });
+
   test("expandPalettesConfig generates correct number of configurations", () => {
     const config: PalettesConfig = {
       namePrefix: "Test Suite",

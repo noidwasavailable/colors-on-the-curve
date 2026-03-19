@@ -30,6 +30,7 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     saturation,
     lightness,
     cmykSafe = false,
+    cmykReconciliation = "scale-down",
   } = config;
 
   if (shades.length === 0) {
@@ -40,7 +41,7 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
   const maxShade = Math.max(...shades);
   const range = maxShade - minShade;
 
-  const colors: ColorResult[] = shades.map((shade) => {
+  const rawColors = shades.map((shade) => {
     // Determine t from 0.0 to 1.0 based on shade value
     const t = range === 0 ? 0.5 : (shade - minShade) / range;
 
@@ -70,26 +71,49 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
     // 4. Conversion to RGB
     const [r, g, b] = hslToRgb(finalH, finalS, finalL);
 
-    // 5. CMYK Safety
-    const safetyResult = makeCmykSafe(r, g, b, 300);
-    const isCmykSafe = safetyResult.isSafe;
+    return { shade, finalH, finalS, finalL, r, g, b };
+  });
 
-    let finalRgb = cmykSafe
-      ? safetyResult.rgb
-      : ([r, g, b] as [number, number, number]);
-    let finalHsl = cmykSafe
-      ? safetyResult.hsl
-      : ([finalH, finalS, finalL] as [number, number, number]);
-    let finalCmyk = safetyResult.cmyk;
+  const reconciledColors = rawColors.map((raw) => {
+    const safetyResult = makeCmykSafe(raw.r, raw.g, raw.b, 300);
+    let ratio = 1.0;
+    if (!safetyResult.isSafe && raw.finalS > 0) {
+      ratio = safetyResult.hsl[1] / raw.finalS;
+    }
+    return { ...raw, safetyResult, isOrigSafe: safetyResult.isSafe, ratio };
+  });
 
-    if (!cmykSafe && !isCmykSafe) {
-      finalCmyk = rgbToCmyk(r, g, b); // The unclamped CMYK
+  let minRatio = 1.0;
+  if (cmykSafe && cmykReconciliation === "scale-down") {
+    minRatio = Math.min(...reconciledColors.map((c) => c.ratio));
+  }
+
+  const colors: ColorResult[] = reconciledColors.map((c) => {
+    let finalRgb, finalHsl, finalCmyk;
+
+    if (cmykSafe) {
+      if (cmykReconciliation === "scale-down") {
+        const newS = c.finalS * minRatio;
+        const [nR, nG, nB] = hslToRgb(c.finalH, newS, c.finalL);
+        finalRgb = [nR, nG, nB] as [number, number, number];
+        finalHsl = [c.finalH, newS, c.finalL] as [number, number, number];
+        const safeTest = makeCmykSafe(nR, nG, nB, 300);
+        finalCmyk = safeTest.cmyk;
+      } else { // clamp
+        finalRgb = c.safetyResult.rgb;
+        finalHsl = c.safetyResult.hsl;
+        finalCmyk = c.safetyResult.cmyk;
+      }
+    } else {
+      finalRgb = [c.r, c.g, c.b] as [number, number, number];
+      finalHsl = [c.finalH, c.finalS, c.finalL] as [number, number, number];
+      finalCmyk = rgbToCmyk(c.r, c.g, c.b);
     }
 
     const hex = rgbToHex(finalRgb[0], finalRgb[1], finalRgb[2]);
 
     return {
-      shade,
+      shade: c.shade,
       hex,
       rgb: finalRgb,
       hsl: [
@@ -98,7 +122,7 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
         Math.round(finalHsl[2]),
       ],
       cmyk: finalCmyk,
-      isCmykSafe,
+      isCmykSafe: c.isOrigSafe,
     };
   });
 
