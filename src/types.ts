@@ -60,3 +60,24 @@ export interface PalettesConfig {
 }
 
 export type ConfigInput = PaletteConfig | PaletteConfig[] | PalettesConfig;
+
+export type FigmaColorSpace = "srgb" | "p3"
+export type FigmaExtensionOptions = "com.figma.scopes" | "com.figma.isOverride" | "com.figma.variableId" | "com.figma.hiddenFromPublishing" | "com.figma.codeSyntax"
+export type Hexcode = `#${string}`
+
+export type FigmaToken = {
+  $type: "color";
+  $value: {
+    colorSpace: FigmaColorSpace;
+    components: [number, number, number];
+    alpha: number;
+    hex: Hexcode;
+  };
+  $extensions?: {
+    [key in FigmaExtensionOptions]?: string | string[] | boolean | Record<string, string>;
+  };
+}
+
+export interface FigmaTokenGroup {
+  [key: string]: FigmaToken | FigmaTokenGroup | string | number | boolean | any[];
+}
