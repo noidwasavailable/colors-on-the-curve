@@ -33,7 +33,7 @@ const config: PalettesConfig = {
     minLight: 80,
     curve: "easeInOut",
   },
-  lightness: { start: 97, end: 3, curve: "linear" },
+  lightness: { start: 97, end: 13, curve: "linear" },
   shades: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
   cmykSafe: true,
   cmykReconciliation: "scale-down"
