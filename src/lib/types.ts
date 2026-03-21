@@ -99,5 +99,5 @@ export interface FigmaTokenGroup {
 		| string
 		| number
 		| boolean
-		| any[];
+		| unknown[];
 }

@@ -1,37 +1,48 @@
-import React, { useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
+import { useMemo, useState } from "react";
 import {
 	EDITOR_PROPERTIES,
-	UI_TEXT,
 	type EditorPropertyMeta,
 	type PropertyPath,
+	UI_TEXT,
 	type UiMode,
 } from "@/lib/constants";
+import type { ConfigInput } from "@/lib/types";
 
 interface EditorProps {
-	config: any;
+	config: ConfigInput;
 	mode: UiMode;
-	onChange: (updater: (prev: any) => any) => void;
+	onChange: (updater: (prev: ConfigInput) => ConfigInput) => void;
 	outOfGamutCount?: number;
 }
 
-function getPathValue(obj: any, path: PropertyPath): any {
+function getPathValue<T = unknown>(obj: ConfigInput, path: PropertyPath): T {
 	const [firstKey, secondKey] = path;
-	if (secondKey === undefined) return obj?.[firstKey];
-	return obj?.[firstKey]?.[secondKey];
+	const root = obj as unknown as Record<string, unknown>;
+	if (secondKey === undefined) return root?.[firstKey] as T;
+	const nested = root?.[firstKey] as Record<string, unknown> | undefined;
+	return nested?.[secondKey] as T;
 }
 
-function setPathValue(obj: any, path: PropertyPath, value: any): any {
+function setPathValue(
+	obj: ConfigInput,
+	path: PropertyPath,
+	value: unknown,
+): ConfigInput {
 	const [firstKey, secondKey] = path;
-	const next = { ...obj };
+	const root = obj as unknown as Record<string, unknown>;
+	const next = { ...root };
 
 	if (secondKey === undefined) {
 		next[firstKey] = value;
-		return next;
+		return next as unknown as ConfigInput;
 	}
 
-	next[firstKey] = { ...(next[firstKey] ?? {}), [secondKey]: value };
-	return next;
+	next[firstKey] = {
+		...((next[firstKey] as Record<string, unknown>) ?? {}),
+		[secondKey]: value,
+	};
+	return next as unknown as ConfigInput;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -162,6 +173,7 @@ export function Editor({
 			<Box marginTop={1} flexDirection="column">
 				<Text color="yellow">{activeProp?.description ?? ""}</Text>
 				{activeProp?.id === "cmykSafe" &&
+					"cmykSafe" in config &&
 					config.cmykSafe &&
 					outOfGamutCount !== undefined &&
 					outOfGamutCount > 0 && (

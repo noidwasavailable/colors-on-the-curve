@@ -1,12 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import type {
-	ConfigInput,
-	PaletteConfig,
-	PalettesConfig,
-	PaletteResult,
-} from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
 import { PREVIEW_UI, UI_TEXT, type UiMode } from "@/lib/constants";
+import type { ConfigInput, PaletteConfig, PaletteResult } from "@/lib/types";
 
 interface PalettePreviewProps {
 	config: ConfigInput;
@@ -36,7 +31,7 @@ export function PalettePreview({
 			const arr = config as PaletteConfig[];
 			return arr[activeIndex]?.cmykSafe ?? false;
 		}
-		return (config as any).cmykSafe ?? false;
+		return (config as PaletteConfig).cmykSafe ?? false;
 	}, [config, mode, activeIndex]);
 
 	const { palettes, previewError } = previewState;
@@ -106,6 +101,7 @@ export function PalettePreview({
 
 					return (
 						<Box
+							// biome-ignore lint/suspicious/noArrayIndexKey: Array size is static and never reorders
 							key={`${palette.name}-${i}`}
 							flexDirection="row"
 							marginBottom={0}
@@ -128,6 +124,7 @@ export function PalettePreview({
 											.map(() => SWATCH_BLOCK)
 											.map((_, i) => (
 												<Text
+													// biome-ignore lint/suspicious/noArrayIndexKey: Array size is static and never reorders
 													key={i}
 													backgroundColor={color.hex}
 													color={color.hsl[2] > 55 ? "black" : "white"}

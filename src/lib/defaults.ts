@@ -1,9 +1,9 @@
 import type {
+	CurveConfig,
+	HueRangeConfig,
 	PaletteConfig,
 	PalettesConfig,
 	SaturationConfig,
-	CurveConfig,
-	HueRangeConfig,
 } from "./types";
 
 export const defaultSaturation: SaturationConfig = {

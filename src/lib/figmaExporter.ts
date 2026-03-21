@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
-import { join } from "path";
-import type { PaletteResult, FigmaTokenGroup, Hexcode } from "./types";
+import { join } from "node:path";
+import type { FigmaTokenGroup, Hexcode, PaletteResult } from "./types";
 
 const CONNECTION_CHARACTER = "/";
 
@@ -43,22 +43,23 @@ export function exportFigmaTokens(
 	return result;
 }
 
-export function setTokensAlpha(obj: any, alpha: number): any {
+export function setTokensAlpha(obj: unknown, alpha: number): unknown {
 	if (Array.isArray(obj)) {
 		return obj.map((item) => setTokensAlpha(item, alpha));
 	}
 	if (obj !== null && typeof obj === "object") {
-		if (obj.$type === "color" && obj.$value) {
+		const record = obj as Record<string, unknown>;
+		if (record.$type === "color" && record.$value) {
 			return {
-				...obj,
+				...record,
 				$value: {
-					...obj.$value,
+					...(record.$value as Record<string, unknown>),
 					alpha: alpha,
 				},
 			};
 		}
-		const result: any = {};
-		for (const [key, value] of Object.entries(obj)) {
+		const result: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(record)) {
 			result[key] = setTokensAlpha(value, alpha);
 		}
 		return result;

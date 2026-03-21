@@ -1,4 +1,4 @@
-import { useRef, type FormEvent } from "react";
+import { type FormEvent, useRef } from "react";
 
 export function APITester() {
 	const responseInputRef = useRef<HTMLTextAreaElement>(null);

@@ -1,21 +1,21 @@
 import {
+	type FORMATTED_COLOR,
 	getColorName,
 	initColors,
 	ORIGINAL_COLORS,
-	type FORMATTED_COLOR,
-	// @ts-ignore import doesnt have type definitions
+	// @ts-expect-error import doesnt have type definitions
 } from "ntc-ts";
 import {
 	applyCurve,
 	hslToRgb,
-	rgbToHex,
 	makeCmykSafe,
 	rgbToCmyk,
+	rgbToHex,
 } from "./colorMath";
 import type {
+	ColorResult,
 	PaletteConfig,
 	PaletteResult,
-	ColorResult,
 	PalettesConfig,
 } from "./types";
 
@@ -89,7 +89,9 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
 	}
 
 	const colors: ColorResult[] = reconciledColors.map((c) => {
-		let finalRgb, finalHsl, finalCmyk;
+		let finalRgb: [number, number, number],
+			finalHsl: [number, number, number],
+			finalCmyk: [number, number, number, number];
 
 		if (cmykSafe) {
 			if (cmykReconciliation === "scale-down") {

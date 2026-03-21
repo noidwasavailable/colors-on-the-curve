@@ -1,6 +1,7 @@
-import { parseArgs } from "util";
-import { parse as pathParse, join } from "path";
+import { join, parse as pathParse } from "node:path";
+import { parseArgs } from "node:util";
 import { generateTransparencyTokens } from "./figmaExporter";
+import type { FigmaTokenGroup } from "./types";
 
 async function main() {
 	const { positionals } = parseArgs({
@@ -23,9 +24,9 @@ async function main() {
 	const baseName = parsed.name.replace(/\.tokens$/, "");
 	const outDir = join(parsed.dir || ".", `${baseName}-transparency`);
 
-	let tokensData: any;
+	let tokensData: FigmaTokenGroup;
 	try {
-		tokensData = await Bun.file(inputFile).json();
+		tokensData = (await Bun.file(inputFile).json()) as FigmaTokenGroup;
 	} catch (error) {
 		console.error(`Failed to read or parse input file: ${inputFile}`);
 		console.error(error);

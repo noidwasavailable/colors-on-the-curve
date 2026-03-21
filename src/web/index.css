@@ -181,6 +181,7 @@ code {
 	*,
 	::before,
 	::after {
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion should always be preferred */
 		animation: none !important;
 	}
 }

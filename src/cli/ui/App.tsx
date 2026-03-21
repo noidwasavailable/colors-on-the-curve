@@ -1,12 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
 import { Box, Text, useApp, useInput } from "ink";
-import type { ConfigInput, PaletteConfig, PalettesConfig } from "@/lib/types";
-import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
-import { Editor } from "./Editor";
-import { PalettePreview } from "./PalettePreview";
-import { generatePalette, expandPalettesConfig } from "@/lib/generator";
-import type { PaletteResult } from "@/lib/types";
-import { exportFigmaTokens } from "@/lib/figmaExporter";
+import React, { useEffect, useMemo, useState } from "react";
 import {
 	APP_TOGGLES,
 	GLOBAL_ACTIONS,
@@ -16,24 +9,22 @@ import {
 	UI_TEXT,
 	type UiMode,
 } from "@/lib/constants";
-
-interface SaveOptions {
-	exportTokens?: boolean;
-}
-
-interface SaveResult {
-	outFilePath: string;
-	tokensSaved: boolean;
-	tokensFilePath: string;
-}
+import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
+import { exportFigmaTokens } from "@/lib/figmaExporter";
+import { expandPalettesConfig, generatePalette } from "@/lib/generator";
+import type {
+	ConfigInput,
+	PaletteConfig,
+	PaletteResult,
+	PalettesConfig,
+} from "@/lib/types";
+import type { SaveFunction } from "../types";
+import { Editor } from "./Editor";
+import { PalettePreview } from "./PalettePreview";
 
 interface AppProps {
 	initialConfig: ConfigInput;
-	onSave: (
-		data: any,
-		tokens?: any,
-		options?: SaveOptions,
-	) => Promise<SaveResult>;
+	onSave: SaveFunction;
 	exportTokens: boolean;
 }
 
@@ -267,14 +258,16 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 		);
 	}
 
-	const onUpdateConfig = (updater: (prev: any) => any) => {
+	const onUpdateConfig = (updater: (prev: ConfigInput) => ConfigInput) => {
 		setConfig((prev) => {
 			if (mode === "ARRAY") {
 				const arr = [...(prev as PaletteConfig[])];
-				arr[activeIndex] = updater(arr[activeIndex] || defaultPaletteConfig);
+				arr[activeIndex] = updater(
+					arr[activeIndex] || defaultPaletteConfig,
+				) as PaletteConfig;
 				return arr;
 			}
-			return updater(prev);
+			return updater(prev) as ConfigInput;
 		});
 	};
 

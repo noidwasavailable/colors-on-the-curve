@@ -17,7 +17,7 @@ export function applyCurve(t: number, curve: CurveType): number {
 			return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 		case "parabolic":
 			// 0 at t=0, 1 at t=0.5, 0 at t=1
-			return 1 - Math.pow(2 * t - 1, 2);
+			return 1 - (2 * t - 1) ** 2;
 		default:
 			return t;
 	}
@@ -142,7 +142,7 @@ export function makeCmykSafe(
 } {
 	let [c, m, y, k] = rgbToCmyk(r, g, b);
 	let tac = c + m + y + k;
-	let isSafe = tac <= maxTac;
+	const isSafe = tac <= maxTac;
 	let [h, s, l] = rgbToHsl(r, g, b);
 
 	if (isSafe && k <= 100) {

@@ -1,13 +1,10 @@
-import { resolve, basename, extname, join } from "path";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { basename, extname, join, resolve } from "node:path";
 import { render } from "ink";
-import { App } from "./ui/App";
-import type { ConfigInput } from "@/lib/types";
 import { defaultPaletteConfig } from "@/lib/defaults";
-
-interface SaveOptions {
-	exportTokens?: boolean;
-}
+import type { ConfigInput } from "@/lib/types";
+import type { SaveFunction } from "./types";
+import { App } from "./ui/App";
 
 async function main() {
 	const args = process.argv.slice(2);
@@ -42,14 +39,10 @@ async function main() {
 
 		const outDirPath = resolve(process.cwd(), outDir);
 
-		const onSave = async (
-			outputData: any,
-			tokenData?: any,
-			options?: SaveOptions,
-		) => {
+		const onSave: SaveFunction = async (outputData, tokenData, options) => {
 			await mkdir(outDirPath, { recursive: true });
 
-			const outFilename = baseName + ".json";
+			const outFilename = `${baseName}.json`;
 			const outFilePath = join(outDirPath, outFilename);
 			await writeFile(
 				outFilePath,
@@ -60,7 +53,7 @@ async function main() {
 			const shouldExportTokens = options?.exportTokens ?? exportTokensFromFlag;
 
 			let tokensSaved = false;
-			const tokensFilePath = join(outDirPath, baseName + ".tokens.json");
+			const tokensFilePath = join(outDirPath, `${baseName}.tokens.json`);
 
 			if (shouldExportTokens && tokenData) {
 				await writeFile(

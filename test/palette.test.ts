@@ -1,6 +1,6 @@
-import { expect, test, describe } from "bun:test";
-import { applyCurve, hslToRgb, rgbToCmyk, makeCmykSafe } from "@/lib/colorMath";
-import { generatePalette, expandPalettesConfig } from "@/lib/generator";
+import { describe, expect, test } from "bun:test";
+import { applyCurve, hslToRgb, makeCmykSafe, rgbToCmyk } from "@/lib/colorMath";
+import { expandPalettesConfig, generatePalette } from "@/lib/generator";
 import type { PaletteConfig, PalettesConfig } from "@/lib/types";
 
 describe("Color Math", () => {
@@ -57,15 +57,15 @@ describe("Generator", () => {
 		expect(result.colors.length).toBe(3);
 
 		// Check shades
-		expect(result.colors[0]!.shade).toBe(100);
-		expect(result.colors[1]!.shade).toBe(500);
-		expect(result.colors[2]!.shade).toBe(900);
+		expect(result.colors[0]?.shade).toBe(100);
+		expect(result.colors[1]?.shade).toBe(500);
+		expect(result.colors[2]?.shade).toBe(900);
 
 		// Verify properties existence
-		expect(result.colors[0]!).toHaveProperty("hex");
-		expect(result.colors[0]!).toHaveProperty("rgb");
-		expect(result.colors[0]!).toHaveProperty("cmyk");
-		expect(result.colors[0]!).toHaveProperty("isCmykSafe");
+		expect(result.colors[0]).toHaveProperty("hex");
+		expect(result.colors[0]).toHaveProperty("rgb");
+		expect(result.colors[0]).toHaveProperty("cmyk");
+		expect(result.colors[0]).toHaveProperty("isCmykSafe");
 	});
 
 	test("generatePalette applies hue curve correctly", () => {
@@ -84,13 +84,13 @@ describe("Generator", () => {
 		expect(result.colors.length).toBe(3);
 
 		// At t=0, hueCurve(0) = 0. h = 200 + 100*0 = 200
-		expect(result.colors[0]!.hsl[0]).toBe(200);
+		expect(result.colors[0]?.hsl[0]).toBe(200);
 
 		// At t=0.5, hueCurve(0.5) = 1. h = 200 + 100*1 = 300
-		expect(result.colors[1]!.hsl[0]).toBe(300);
+		expect(result.colors[1]?.hsl[0]).toBe(300);
 
 		// At t=1.0, hueCurve(1.0) = 0. h = 200 + 100*0 = 200
-		expect(result.colors[2]!.hsl[0]).toBe(200);
+		expect(result.colors[2]?.hsl[0]).toBe(200);
 	});
 
 	test("generatePalette scales down saturation correctly when cmykReconciliation is scale-down", () => {
@@ -109,23 +109,32 @@ describe("Generator", () => {
 		const unsafeResult = generatePalette(unsafeConfig);
 
 		// Scale down should mean safe saturations are uniformly scaled down
-		const safeSat1 = safeResult.colors[0]!.hsl[1];
-		const safeSat2 = safeResult.colors[1]!.hsl[1];
+		const safeSat1 = safeResult.colors[0]?.hsl[1];
+		const safeSat2 = safeResult.colors[1]?.hsl[1];
 
-		const unsafeSat1 = unsafeResult.colors[0]!.hsl[1];
-		const unsafeSat2 = unsafeResult.colors[1]!.hsl[1];
+		const unsafeSat1 = unsafeResult.colors[0]?.hsl[1];
+		const unsafeSat2 = unsafeResult.colors[1]?.hsl[1];
+
+		if (
+			safeSat1 === undefined ||
+			safeSat2 === undefined ||
+			unsafeSat1 === undefined ||
+			unsafeSat2 === undefined
+		) {
+			throw new Error("Saturation values must not be undefined");
+		}
 
 		const ratio1 = safeSat1 / unsafeSat1;
 		const ratio2 = safeSat2 / unsafeSat2;
 		expect(Math.abs(ratio1 - ratio2)).toBeLessThan(0.05); // allow minor rounding differences
 
 		// Test clamp behaviour for contrast
-		const clampResult = generatePalette({
-			...config,
-			cmykReconciliation: "clamp",
-		});
-		const clampSat1 = clampResult.colors[0]!.hsl[1];
-		const clampSat2 = clampResult.colors[1]!.hsl[1];
+		// const clampResult = generatePalette({
+		// 	...config,
+		// 	cmykReconciliation: "clamp",
+		// });
+		// const clampSat1 = clampResult.colors[0]?.hsl[1];
+		// const clampSat2 = clampResult.colors[1]?.hsl[1];
 		// Since both 500 and 600 are out of gamut identically, ratio might be similar but maybe not exactly
 		// but scale-down tests uniform scale regardless of clamp necessity
 	});
@@ -144,13 +153,13 @@ describe("Generator", () => {
 		const expanded = expandPalettesConfig(config);
 		expect(expanded.length).toBe(3);
 
-		expect(expanded[0]!.name).toBe("test-suite-a");
-		expect(expanded[1]!.name).toBe("test-suite-b-object");
-		expect(expanded[2]!.name).toBe("test-suite-c");
+		expect(expanded[0]?.name).toBe("test-suite-a");
+		expect(expanded[1]?.name).toBe("test-suite-b-object");
+		expect(expanded[2]?.name).toBe("test-suite-c");
 
-		expect(expanded[0]!.baseHue).toBe(0);
-		expect(expanded[1]!.baseHue).toBe(50);
-		expect(expanded[2]!.baseHue).toBe(100);
+		expect(expanded[0]?.baseHue).toBe(0);
+		expect(expanded[1]?.baseHue).toBe(50);
+		expect(expanded[2]?.baseHue).toBe(100);
 	});
 
 	test("expandPalettesConfig resolves mixed naming and fallback index naming", () => {
@@ -167,13 +176,13 @@ describe("Generator", () => {
 		expect(expanded.length).toBe(5);
 
 		// First 3 should use kebab case combination
-		expect(expanded[0]!.name).toBe("blue-a");
-		expect(expanded[1]!.name).toBe("blue-b-object");
-		expect(expanded[2]!.name).toBe("blue-c");
+		expect(expanded[0]?.name).toBe("blue-a");
+		expect(expanded[1]?.name).toBe("blue-b-object");
+		expect(expanded[2]?.name).toBe("blue-c");
 
 		// Last 2 should fallback to namePrefix + index (1-based)
-		expect(expanded[3]!.name).toBe("Blue-4");
-		expect(expanded[4]!.name).toBe("Blue-5");
+		expect(expanded[3]?.name).toBe("Blue-4");
+		expect(expanded[4]?.name).toBe("Blue-5");
 	});
 
 	test("expandPalettesConfig handles missing prefix with fewer names than hues", () => {
@@ -189,10 +198,10 @@ describe("Generator", () => {
 		expect(expanded.length).toBe(3);
 
 		// First should use the exact provided name
-		expect(expanded[0]!.name).toBe("Only One");
+		expect(expanded[0]?.name).toBe("Only One");
 
 		// Afterwards should be undefined because both prefix & custom names are missing
-		expect(expanded[1]!.name).toBeUndefined();
-		expect(expanded[2]!.name).toBeUndefined();
+		expect(expanded[1]?.name).toBeUndefined();
+		expect(expanded[2]?.name).toBeUndefined();
 	});
 });
