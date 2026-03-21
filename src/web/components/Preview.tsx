@@ -22,7 +22,8 @@ export function ColorSwatch({
 		setTimeout(() => setCopied(false), 1500);
 	};
 
-	const textColor = lightness > 60 ? "#000000" : "#ffffff";
+	const textColor = lightness > 60 ? "#202020" : "#f0f0f0";
+	const textOutlineColor = lightness > 60 ? "#f0f0f0" : "#202020";
 
 	return (
 		<button
@@ -65,10 +66,22 @@ export function ColorSwatch({
 				}}
 			>
 				<div style={{ display: "flex", flexDirection: "column" }}>
-					<span style={{ fontWeight: 700, fontSize: "1.1rem" }}>{shade}</span>
+					<span
+						style={{
+							fontWeight: 700,
+							fontSize: "1.1rem",
+							textShadow: `-1px -1px 0 ${textOutlineColor}, 1px -1px 0 ${textOutlineColor}, -1px 1px 0 ${textOutlineColor}, 1px 1px 0 ${textOutlineColor}`,
+						}}
+					>
+						{shade}
+					</span>
 					<span
 						className="font-mono"
-						style={{ opacity: 0.8, fontSize: "0.875rem" }}
+						style={{
+							opacity: 0.8,
+							fontSize: "0.875rem",
+							textShadow: `-1px -1px 0 ${textOutlineColor}, 1px -1px 0 ${textOutlineColor}, -1px 1px 0 ${textOutlineColor}, 1px 1px 0 ${textOutlineColor}`,
+						}}
 					>
 						{copied ? "Copied!" : hex.toUpperCase()}
 					</span>
