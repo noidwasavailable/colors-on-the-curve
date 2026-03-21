@@ -14,7 +14,8 @@
     },
     // Environment setup & latest features
     "lib": [
-      "ESNext"
+      "ESNext",
+      "DOM"
     ],
     "target": "ESNext",
     "module": "Preserve",
@@ -35,6 +36,11 @@
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
-  }
+    "noPropertyAccessFromIndexSignature": false,
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "data"
+  ]
 }
