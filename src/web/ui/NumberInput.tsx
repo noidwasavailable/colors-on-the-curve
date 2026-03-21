@@ -1,5 +1,21 @@
 import type React from "react";
 
+const styles = `
+.number-input {
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--border-color);
+	color: var(--text-main);
+	border-radius: var(--radius-sm);
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
+	outline: none;
+	padding: 0.4rem;
+}
+.number-input:focus { border-color: var(--border-color-focus); }
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.number-input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+`;
 interface NumberInputProps {
 	id?: string;
 	value: number;
@@ -25,6 +41,8 @@ export function NumberInput({
 	const handleInc = () => onChange(Math.min(max, value + step));
 
 	return (
+		<>
+		<style>{styles}</style>
 		<div style={{ display: "flex", gap: "0.25rem", ...style }}>
 			<button
 				type="button"
@@ -62,5 +80,6 @@ export function NumberInput({
 				+
 			</button>
 		</div>
+		</>
 	);
 }

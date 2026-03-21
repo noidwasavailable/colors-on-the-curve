@@ -10,8 +10,54 @@ import type {
 	PalettesConfig,
 } from "@/lib/types";
 import { Editor } from "./components/Editor";
+import { Header } from "./components/Header";
 import { Preview } from "./components/Preview";
+import { PreviewHeader } from "./components/PreviewHeader";
 import "./index.css";
+
+const appStyles = {
+	container: {
+		display: "flex",
+		height: "100vh",
+		padding: "var(--pane-gap)",
+		gap: "var(--pane-gap)",
+		maxWidth: "1600px",
+		margin: "0 auto",
+	},
+	sidebar: {
+		width: "var(--sidebar-width)",
+		minWidth: "var(--sidebar-width)",
+		background: "var(--bg-panel)",
+		backdropFilter: "blur(24px)",
+		WebkitBackdropFilter: "blur(24px)",
+		border: "1px solid var(--border-color)",
+		borderRadius: "var(--radius-lg)",
+		display: "flex",
+		flexDirection: "column",
+		overflowY: "auto",
+		boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+	},
+	sidebarContent: {
+		flex: 1,
+		padding: "1.5rem",
+		overflowY: "auto",
+		display: "flex",
+		flexDirection: "column",
+		gap: "1.5rem",
+	},
+	mainContent: {
+		flex: 1,
+		background: "var(--bg-panel)",
+		backdropFilter: "blur(24px)",
+		WebkitBackdropFilter: "blur(24px)",
+		border: "1px solid var(--border-color)",
+		borderRadius: "var(--radius-lg)",
+		display: "flex",
+		flexDirection: "column",
+		overflow: "hidden",
+		boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+	}
+} as const;
 
 export function App() {
 	const [mode, setMode] = useState<UiMode>("PALETTES");
@@ -23,9 +69,8 @@ export function App() {
 	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
 		PaletteConfig[] | null
 	>(null);
-	const [persistedSpectrumConfig, setPersistedSpectrumConfig] = useState<
-		PalettesConfig | null
-	>(null);
+	const [persistedSpectrumConfig, setPersistedSpectrumConfig] =
+		useState<PalettesConfig | null>(null);
 
 	const previewState = useMemo(() => {
 		let palettes: PaletteResult[] = [];
@@ -176,12 +221,10 @@ export function App() {
 	};
 
 	return (
-		<div className="app-container">
-			<aside className="sidebar">
-				<header className="sidebar-header">
-					<h1>Colors on the Curve</h1>
-				</header>
-				<div className="sidebar-content">
+		<div style={appStyles.container}>
+			<aside style={appStyles.sidebar}>
+				<Header />
+				<div style={appStyles.sidebarContent}>
 					<Editor
 						config={activeConfig || defaultPaletteConfig}
 						mode={mode}
@@ -192,52 +235,13 @@ export function App() {
 				</div>
 			</aside>
 
-			<main className="main-content">
-				<div
-					style={{
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "center",
-						padding: "1.5rem 1.5rem 0",
-						flexShrink: 0,
-					}}
-				>
-					<div style={{ display: "flex", alignItems: "baseline", gap: "1rem" }}>
-						<h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>
-							Preview
-						</h2>
-						<span className="text-muted text-sm">
-							{previewState.palettes.length} palettes
-						</span>
-					</div>
-					<div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-						<label
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "0.5rem",
-								fontSize: "0.875rem",
-								cursor: "pointer",
-								color: "var(--text-muted)",
-							}}
-						>
-							<input
-								type="checkbox"
-								checked={exportTokensEnabled}
-								onChange={(e) => setExportTokensEnabled(e.target.checked)}
-							/>
-							Figma Tokens
-						</label>
-						<button
-							type="button"
-							className="btn active"
-							onClick={handleExport}
-							disabled={previewState.palettes.length === 0}
-						>
-							Export JSON
-						</button>
-					</div>
-				</div>
+			<main style={appStyles.mainContent}>
+				<PreviewHeader
+					paletteCount={previewState.palettes.length}
+					exportTokensEnabled={exportTokensEnabled}
+					setExportTokensEnabled={setExportTokensEnabled}
+					onExport={handleExport}
+				/>
 				{previewState.previewError && (
 					<div
 						style={{
@@ -261,6 +265,8 @@ export function App() {
 			</main>
 		</div>
 	);
+
+
 }
 
 export default App;
