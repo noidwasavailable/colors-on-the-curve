@@ -32,6 +32,7 @@ interface AppProps {
 	initialMode: UiMode;
 	onSave: SaveFunction;
 	exportTokens: boolean;
+	exportTransparencyTokens: boolean;
 }
 
 export function App({
@@ -39,6 +40,7 @@ export function App({
 	initialMode,
 	onSave,
 	exportTokens,
+	exportTransparencyTokens,
 }: AppProps) {
 	const { exit } = useApp();
 	const [config, setConfig] = useState<ConfigInput>(initialConfig);
@@ -47,6 +49,8 @@ export function App({
 	const [status, setStatus] = useState<string>(UI_TEXT.statusEditing);
 	const [exportTokensEnabled, setExportTokensEnabled] =
 		useState<boolean>(exportTokens);
+	const [exportTransparencyEnabled, setExportTransparencyEnabled] =
+		useState<boolean>(exportTransparencyTokens);
 
 	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
 		PaletteConfig[] | null
@@ -155,6 +159,11 @@ export function App({
 			return;
 		}
 
+		if (input === "p") {
+			setExportTransparencyEnabled((prev) => !prev);
+			return;
+		}
+
 		if (input === "+") {
 			if (mode === "PALETTES") {
 				const { newConfig, newActiveIndex } = addPalette(
@@ -249,11 +258,15 @@ export function App({
 
 			const res = await onSave(config, mode, outputData, tokensData, {
 				exportTokens: exportTokensEnabled,
+				transparencyTokens: exportTransparencyEnabled,
 			});
 
 			setStatus(`${UI_TEXT.savedToPrefix} ${res.outFilePath}`);
 			if (res.tokensSaved) {
 				console.log(`${UI_TEXT.savedTokensPrefix} ${res.tokensFilePath}`);
+			}
+			if (res.transparencyTokensSaved) {
+				console.log(`Transparency tokens saved to ${res.transparencyDir}`);
 			}
 
 			setTimeout(exit, 500);
@@ -409,6 +422,11 @@ export function App({
 						<Text bold>{APP_TOGGLES.exportTokens.key} </Text>
 						{APP_TOGGLES.exportTokens.label}:{" "}
 						<Text bold>{exportTokensEnabled ? "ON" : "OFF"}</Text>
+					</Text>
+					<Text color={exportTransparencyEnabled ? "green" : "#A0A0A0"}>
+						<Text bold>p </Text>
+						Transparency Tokens:{" "}
+						<Text bold>{exportTransparencyEnabled ? "ON" : "OFF"}</Text>
 					</Text>
 				</Box>
 

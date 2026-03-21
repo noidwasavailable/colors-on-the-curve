@@ -2,6 +2,8 @@ interface PreviewHeaderProps {
 	paletteCount: number;
 	exportTokensEnabled: boolean;
 	setExportTokensEnabled: (enabled: boolean) => void;
+	exportTransparencyEnabled: boolean;
+	setExportTransparencyEnabled: (enabled: boolean) => void;
 	onExport: () => void;
 	onImport: () => void;
 }
@@ -10,6 +12,8 @@ export function PreviewHeader({
 	paletteCount,
 	exportTokensEnabled,
 	setExportTokensEnabled,
+	exportTransparencyEnabled,
+	setExportTransparencyEnabled,
 	onExport,
 	onImport,
 }: PreviewHeaderProps) {
@@ -32,26 +36,48 @@ export function PreviewHeader({
 				</span>
 			</div>
 			<div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-				<label
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: "0.5rem",
-						fontSize: "0.875rem",
-						cursor: "pointer",
-						color: "var(--text-muted)",
-					}}
-				>
-					<input
-						type="checkbox"
-						checked={exportTokensEnabled}
-						onChange={(e) => setExportTokensEnabled(e.target.checked)}
-					/>
-					Figma Tokens
-				</label>
+				<div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+					<label
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "0.5rem",
+							fontSize: "0.875rem",
+							cursor: "pointer",
+							color: "var(--text-muted)",
+						}}
+					>
+						<input
+							type="checkbox"
+							checked={exportTokensEnabled}
+							onChange={(e) => setExportTokensEnabled(e.target.checked)}
+						/>
+						Figma Tokens
+					</label>
+					{exportTokensEnabled && (
+						<label
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "0.5rem",
+								fontSize: "0.875rem",
+								cursor: "pointer",
+								color: "var(--text-muted)",
+								paddingLeft: "1.25rem",
+							}}
+						>
+							<input
+								type="checkbox"
+								checked={exportTransparencyEnabled}
+								onChange={(e) => setExportTransparencyEnabled(e.target.checked)}
+							/>
+							Transparency Tokens
+						</label>
+					)}
+				</div>
 				<div style={{ display: "flex", gap: "0.5rem" }}>
 					<button type="button" className="btn" onClick={onImport}>
-						Import JSON
+						Import
 					</button>
 					<button
 						type="button"
@@ -59,7 +85,7 @@ export function PreviewHeader({
 						onClick={onExport}
 						disabled={paletteCount === 0}
 					>
-						Export JSON
+						Export
 					</button>
 				</div>
 			</div>

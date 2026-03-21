@@ -1,7 +1,11 @@
+import JSZip from "jszip";
 import { useMemo, useState } from "react";
 import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
-import { exportFigmaTokens } from "@/lib/figmaExporter";
+import {
+	buildTransparencyTokensList,
+	exportFigmaTokens,
+} from "@/lib/figmaExporter";
 import { expandPalettesConfig, generatePalette } from "@/lib/generator";
 import { addPalette, removePalette, renamePalette } from "@/lib/paletteUtils";
 import type {
@@ -67,6 +71,8 @@ export function App() {
 	]);
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [exportTokensEnabled, setExportTokensEnabled] = useState(false);
+	const [exportTransparencyEnabled, setExportTransparencyEnabled] =
+		useState(false);
 	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
 		PaletteConfig[] | null
 	>(null);
@@ -191,7 +197,7 @@ export function App() {
 		setConfig(newConfig);
 	};
 
-	const handleExport = () => {
+	const handleExport = async () => {
 		if (previewState.palettes.length === 0) return;
 
 		const exportData = {
@@ -201,20 +207,30 @@ export function App() {
 			palettes: previewState.palettes,
 		};
 
-		const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(exportData, null, 2))}`;
-		const a = document.createElement("a");
-		a.href = dataStr;
-		a.download = "palettes.json";
-		a.click();
+		const zip = new JSZip();
+		zip.file("palettes.json", JSON.stringify(exportData, null, 2));
 
 		if (exportTokensEnabled) {
 			const tokens = exportFigmaTokens(previewState.palettes);
-			const tokensStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(tokens, null, 2))}`;
-			const t = document.createElement("a");
-			t.href = tokensStr;
-			t.download = "palettes.tokens.json";
-			t.click();
+			zip.file("palettes.tokens.json", JSON.stringify(tokens, null, 2));
+
+			if (exportTransparencyEnabled) {
+				const transparencyFolder = zip.folder("transparency");
+				if (transparencyFolder) {
+					for (const { filename, tokens: tTokens } of buildTransparencyTokensList(tokens)) {
+						transparencyFolder.file(filename, JSON.stringify(tTokens, null, 2));
+					}
+				}
+			}
 		}
+
+		const blob = await zip.generateAsync({ type: "blob" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "palettes.zip";
+		a.click();
+		URL.revokeObjectURL(url);
 	};
 
 	const handleImport = () => {
@@ -268,6 +284,8 @@ export function App() {
 					paletteCount={previewState.palettes.length}
 					exportTokensEnabled={exportTokensEnabled}
 					setExportTokensEnabled={setExportTokensEnabled}
+					exportTransparencyEnabled={exportTransparencyEnabled}
+					setExportTransparencyEnabled={setExportTransparencyEnabled}
 					onExport={handleExport}
 					onImport={handleImport}
 				/>

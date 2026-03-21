@@ -3,6 +3,7 @@ import { basename, extname, join, resolve } from "node:path";
 import { render } from "ink";
 import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
+import { generateTransparencyTokens } from "@/lib/figmaExporter";
 import type { ConfigInput } from "@/lib/types";
 import type { SaveFunction } from "./types";
 import { App } from "./ui/App";
@@ -21,6 +22,7 @@ async function main() {
 	const configPath = args.find((a) => !a.startsWith("--"));
 	const outDirArg = args.find((a) => a.startsWith("--out-dir="));
 	const exportTokensFromFlag = args.includes("--tokens");
+	const exportTransparencyFromFlag = args.includes("--transparency-tokens");
 
 	const outDir = outDirArg?.split("=")[1] || "data";
 
@@ -85,9 +87,13 @@ async function main() {
 			);
 
 			const shouldExportTokens = options?.exportTokens ?? exportTokensFromFlag;
+			const shouldExportTransparency =
+				options?.transparencyTokens ?? exportTransparencyFromFlag;
 
 			let tokensSaved = false;
 			const tokensFilePath = join(outDirPath, `${baseName}.tokens.json`);
+			let transparencyTokensSaved = false;
+			const transparencyDir = join(outDirPath, "transparency");
 
 			if (shouldExportTokens && tokenData) {
 				await writeFile(
@@ -96,9 +102,20 @@ async function main() {
 					"utf-8",
 				);
 				tokensSaved = true;
+
+				if (shouldExportTransparency) {
+					await generateTransparencyTokens(tokenData, transparencyDir);
+					transparencyTokensSaved = true;
+				}
 			}
 
-			return { outFilePath, tokensSaved, tokensFilePath };
+			return {
+				outFilePath,
+				tokensSaved,
+				tokensFilePath,
+				transparencyTokensSaved,
+				transparencyDir,
+			};
 		};
 
 		render(
@@ -107,6 +124,7 @@ async function main() {
 				initialMode={initialMode}
 				onSave={onSave}
 				exportTokens={exportTokensFromFlag}
+				exportTransparencyTokens={exportTransparencyFromFlag}
 			/>,
 		);
 	} catch (err) {

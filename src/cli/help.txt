@@ -7,9 +7,11 @@ Arguments:
   configPath       Path to a .ts or .json config file to load. If omitted, uses default.
 
 Options:
-  --out-dir=<dir>  Directory to save generated palettes (default: "data")
-  --tokens         Export Figma tokens alongside palettes
-  -h, --help       Show this help message
+  --out-dir=<dir>          Directory to save generated palettes (default: "data")
+  --tokens                 Export Figma tokens alongside palettes
+  --transparency-tokens    Export per-opacity transparency token files (10%–100%)
+                           alongside the palette. Requires --tokens.
+  -h, --help               Show this help message
 
 Interactive Controls (PALETTES mode):
   [r]              Rename current palette
@@ -26,3 +28,4 @@ Global Actions:
   [q]              Quit without saving
   [h]              Show this help message
   [t]              Toggle Figma token export on save
+  [p]              Toggle transparency token export on save (requires tokens ON)

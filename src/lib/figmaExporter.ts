@@ -11,11 +11,11 @@ export function exportFigmaTokens(
 	const result: FigmaTokenGroup = {};
 
 	for (const palette of arr) {
-		// Figma usually likes single words or kebab-case for tokens.
-		// Use the palette name as the base prefix.
+		// Kebab-case the name (spaces → hyphens) then use "/" as the
+		// hierarchical separator between the name and the shade number.
 		const paletteName = palette.name
 			.toLowerCase()
-			.replace(/\s+/g, CONNECTION_CHARACTER);
+			.replace(/\s+/g, "-");
 		for (const color of palette.colors) {
 			const tokenName = `${paletteName}${CONNECTION_CHARACTER}${color.shade}`;
 			result[tokenName] = {
@@ -67,23 +67,37 @@ export function setTokensAlpha(obj: unknown, alpha: number): unknown {
 	return obj;
 }
 
+/**
+ * Returns the list of per-opacity token payloads (10 % – 100 %) without
+ * touching the file system.
+ */
+export function buildTransparencyTokensList(
+	tokens: FigmaTokenGroup,
+): { filename: string; tokens: unknown }[] {
+	const entries: { filename: string; tokens: unknown }[] = [];
+
+	for (let percent = 10; percent <= 100; percent += 10) {
+		const alpha = Math.round((percent / 100) * 10) / 10;
+		entries.push({
+			filename: `${percent}.tokens.json`,
+			tokens: setTokensAlpha(tokens, alpha),
+		});
+	}
+
+	return entries;
+}
+
 export async function generateTransparencyTokens(
 	tokens: FigmaTokenGroup,
 	outDir: string,
 ) {
 	await mkdir(outDir, { recursive: true });
 
-	for (let percent = 0; percent <= 100; percent += 10) {
-		let alpha: number;
-		if (percent === 0 || percent === 100) {
-			alpha = 1; // 0 is same as 100 (no transparency)
-		} else {
-			alpha = Math.round((percent / 100) * 10) / 10;
-		}
-
-		const modifiedTokens = setTokensAlpha(tokens, alpha);
-		const outFile = join(outDir, `${percent}.tokens.json`);
-
+	for (const {
+		filename,
+		tokens: modifiedTokens,
+	} of buildTransparencyTokensList(tokens)) {
+		const outFile = join(outDir, filename);
 		await Bun.write(outFile, JSON.stringify(modifiedTokens, null, 2));
 	}
 }
