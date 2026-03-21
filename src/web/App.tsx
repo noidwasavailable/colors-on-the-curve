@@ -3,6 +3,7 @@ import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
 import { exportFigmaTokens } from "@/lib/figmaExporter";
 import { expandPalettesConfig, generatePalette } from "@/lib/generator";
+import { addPalette, removePalette, renamePalette } from "@/lib/paletteUtils";
 import type {
 	ConfigInput,
 	PaletteConfig,
@@ -159,46 +160,35 @@ export function App() {
 
 	const handleAddPalette = () => {
 		if (mode !== "PALETTES") return;
-		const arr = [...(config as PaletteConfig[])];
-		const activePalette = arr[activeIndex] ?? { ...defaultPaletteConfig };
-		const nextHue = (activePalette.baseHue + 20) % 360;
-		arr.push({
-			...JSON.parse(JSON.stringify(activePalette)),
-			baseHue: nextHue,
-			id: crypto.randomUUID(),
-		});
-		setConfig(arr);
-		setActiveIndex(arr.length - 1);
+		const { newConfig, newActiveIndex } = addPalette(
+			config as PaletteConfig[],
+			activeIndex,
+			() => crypto.randomUUID(),
+		);
+		setConfig(newConfig);
+		setActiveIndex(newActiveIndex);
 	};
 
 	const handleRemovePalette = (indexToRemove: number) => {
 		if (mode !== "PALETTES") return;
-		const arr = [...(config as PaletteConfig[])];
-		if (arr.length > 1) {
-			arr.splice(indexToRemove, 1);
-			setConfig(arr);
-			if (activeIndex >= arr.length) {
-				setActiveIndex(arr.length - 1);
-			} else if (activeIndex >= indexToRemove) {
-				setActiveIndex(Math.max(0, activeIndex - 1));
-			}
-		} else {
+
+		if ((config as PaletteConfig[]).length <= 1) {
 			window.alert("Cannot remove the last palette in the array.");
+			return;
 		}
+
+		const { newConfig, newActiveIndex } = removePalette(
+			config as PaletteConfig[],
+			activeIndex,
+			indexToRemove,
+		);
+		setConfig(newConfig);
+		setActiveIndex(newActiveIndex);
 	};
 
 	const handleRenamePalette = (index: number, newName: string) => {
-		if (mode === "PALETTES") {
-			const arr = [...(config as PaletteConfig[])];
-			arr[index] = { ...(arr[index] || defaultPaletteConfig), name: newName };
-			setConfig(arr);
-		} else if (mode === "SPECTRUM") {
-			const pConfig = { ...(config as PalettesConfig) };
-			const names = pConfig.names ? [...pConfig.names] : [];
-			while (names.length <= index) names.push("");
-			names[index] = newName;
-			setConfig({ ...pConfig, names });
-		}
+		const newConfig = renamePalette(config, mode, index, newName);
+		setConfig(newConfig);
 	};
 
 	const handleExport = () => {

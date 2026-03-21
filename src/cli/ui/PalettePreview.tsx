@@ -1,7 +1,12 @@
 import { Box, Text, useInput } from "ink";
 import { useEffect, useMemo, useState } from "react";
 import { PREVIEW_UI, UI_TEXT, type UiMode } from "@/lib/constants";
-import type { ConfigInput, PaletteConfig, PaletteResult } from "@/lib/types";
+import type {
+	ConfigInput,
+	PaletteConfig,
+	PaletteResult,
+	PalettesConfig,
+} from "@/lib/types";
 
 interface PalettePreviewProps {
 	config: ConfigInput;
@@ -27,11 +32,11 @@ export function PalettePreview({
 	const [scrollOffset, setScrollOffset] = useState(0);
 
 	const isCmykSafeOn = useMemo(() => {
-		if (mode === "ARRAY") {
+		if (mode === "PALETTES") {
 			const arr = config as PaletteConfig[];
 			return arr[activeIndex]?.cmykSafe ?? false;
 		}
-		return (config as PaletteConfig).cmykSafe ?? false;
+		return (config as PalettesConfig).cmykSafe ?? false;
 	}, [config, mode, activeIndex]);
 
 	const { palettes, previewError } = previewState;
@@ -81,8 +86,8 @@ export function PalettePreview({
 		<Box flexDirection="column">
 			{maxOffset > 0 && (
 				<Box marginBottom={1} flexDirection="row">
-					<Text color="gray">{PREVIEW_UI.horizontalOverflowHint}</Text>
-					<Text color="gray">
+					<Text color="#A0A0A0">{PREVIEW_UI.horizontalOverflowHint}</Text>
+					<Text color="#A0A0A0">
 						{" "}
 						Scroll: ,/. ({visibleStart}-{visibleEnd} of {maxColors})
 					</Text>
@@ -107,14 +112,12 @@ export function PalettePreview({
 							marginBottom={0}
 						>
 							<Box width={20}>
-								<Text bold color="cyan">
-									{mode === "ARRAY"
-										? `${palette.name} (${activeIndex + 1})`
-										: palette.name}
+								<Text bold color={i !== activeIndex ? "#A0A0A0" : "cyan"}>
+									{`${palette.name} (${i + 1})`}
 								</Text>
 							</Box>
 
-							<Text color="gray">{hasLeft ? "‹ " : "  "}</Text>
+							<Text color="#A0A0A0">{hasLeft ? "‹ " : "  "}</Text>
 
 							<Box flexDirection="row">
 								{visibleColors.map((color) => (
@@ -132,12 +135,6 @@ export function PalettePreview({
 													{SWATCH_BLOCK}
 												</Text>
 											))}
-										{/*<Text
-                      backgroundColor={color.hex}
-                      color={color.hsl[2] > 55 ? "black" : "white"}
-                    >
-                      {SWATCH_BLOCK}
-                    </Text>*/}
 										<Text
 											dimColor={!(isCmykSafeOn && !color.isCmykSafe)}
 											color={
@@ -151,7 +148,7 @@ export function PalettePreview({
 								))}
 							</Box>
 
-							<Text color="gray">{hasRight ? " ›" : ""}</Text>
+							<Text color="#A0A0A0">{hasRight ? " ›" : ""}</Text>
 						</Box>
 					);
 				})}

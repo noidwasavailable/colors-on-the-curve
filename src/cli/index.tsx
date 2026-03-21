@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve } from "node:path";
 import { render } from "ink";
+import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
 import type { ConfigInput } from "@/lib/types";
 import type { SaveFunction } from "./types";
@@ -21,11 +22,12 @@ async function main() {
 
 	try {
 		let initialConfig: ConfigInput = { ...defaultPaletteConfig };
+		let initialMode: UiMode = "PALETTES";
 
 		if (fullPath) {
 			const configModule = await import(fullPath);
-			const loadedConfig: ConfigInput | undefined =
-				configModule.default || configModule.config;
+			const loadedConfig =
+				configModule.default || configModule.config || configModule;
 
 			if (!loadedConfig) {
 				console.error(
@@ -34,19 +36,42 @@ async function main() {
 				process.exit(1);
 			}
 
-			initialConfig = loadedConfig;
+			if (
+				loadedConfig.version === 1 &&
+				loadedConfig.mode &&
+				loadedConfig.config
+			) {
+				initialConfig = loadedConfig.config;
+				initialMode = loadedConfig.mode;
+			} else {
+				initialConfig = loadedConfig;
+			}
 		}
 
 		const outDirPath = resolve(process.cwd(), outDir);
 
-		const onSave: SaveFunction = async (outputData, tokenData, options) => {
+		const onSave: SaveFunction = async (
+			config,
+			mode,
+			outputData,
+			tokenData,
+			options,
+		) => {
 			await mkdir(outDirPath, { recursive: true });
 
 			const outFilename = `${baseName}.json`;
 			const outFilePath = join(outDirPath, outFilename);
+
+			const exportData = {
+				version: 1,
+				mode,
+				config,
+				palettes: outputData,
+			};
+
 			await writeFile(
 				outFilePath,
-				JSON.stringify(outputData, null, 2),
+				JSON.stringify(exportData, null, 2),
 				"utf-8",
 			);
 
@@ -70,6 +95,7 @@ async function main() {
 		render(
 			<App
 				initialConfig={initialConfig}
+				initialMode={initialMode}
 				onSave={onSave}
 				exportTokens={exportTokensFromFlag}
 			/>,

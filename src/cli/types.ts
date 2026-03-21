@@ -1,4 +1,5 @@
-import type { FigmaTokenGroup, PaletteResult } from "@/lib/types";
+import type { UiMode } from "@/lib/constants";
+import type { ConfigInput, FigmaTokenGroup, PaletteResult } from "@/lib/types";
 
 export type SaveOptions = {
 	exportTokens?: boolean;
@@ -11,7 +12,9 @@ export type SaveResult = {
 };
 
 export type SaveFunction = (
-	data: PaletteResult | PaletteResult[] | undefined,
+	config: ConfigInput,
+	mode: UiMode,
+	data: PaletteResult[],
 	tokens?: FigmaTokenGroup,
 	options?: SaveOptions,
 ) => Promise<SaveResult>;

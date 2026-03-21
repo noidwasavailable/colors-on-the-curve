@@ -1,5 +1,7 @@
+import { randomUUIDv7 } from "bun";
 import { Box, Text, useApp, useInput } from "ink";
 import React, { useEffect, useMemo, useState } from "react";
+import { UncontrolledTextInput } from "ink-text-input";
 import {
 	APP_TOGGLES,
 	GLOBAL_ACTIONS,
@@ -12,6 +14,7 @@ import {
 import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
 import { exportFigmaTokens } from "@/lib/figmaExporter";
 import { expandPalettesConfig, generatePalette } from "@/lib/generator";
+import { addPalette, removePalette, renamePalette } from "@/lib/paletteUtils";
 import type {
 	ConfigInput,
 	PaletteConfig,
@@ -24,33 +27,44 @@ import { PalettePreview } from "./PalettePreview";
 
 interface AppProps {
 	initialConfig: ConfigInput;
+	initialMode: UiMode;
 	onSave: SaveFunction;
 	exportTokens: boolean;
 }
 
-export function App({ initialConfig, onSave, exportTokens }: AppProps) {
+export function App({
+	initialConfig,
+	initialMode,
+	onSave,
+	exportTokens,
+}: AppProps) {
 	const { exit } = useApp();
 	const [config, setConfig] = useState<ConfigInput>(initialConfig);
-	const [mode, setMode] = useState<UiMode>("SINGLE");
+	const [mode, setMode] = useState<UiMode>(initialMode);
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [status, setStatus] = useState<string>(UI_TEXT.statusEditing);
 	const [exportTokensEnabled, setExportTokensEnabled] =
 		useState<boolean>(exportTokens);
 
+	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
+		PaletteConfig[] | null
+	>(null);
+	const [persistedSpectrumConfig, setPersistedSpectrumConfig] =
+		useState<PalettesConfig | null>(null);
+
+	const [isRenaming, setIsRenaming] = useState(false);
+
 	const activeConfig =
-		mode === "ARRAY" ? (config as PaletteConfig[])[activeIndex] : config;
+		mode === "PALETTES" ? (config as PaletteConfig[])[activeIndex] : config;
 
 	const previewState = useMemo(() => {
 		let palettes: PaletteResult[] = [];
 		let previewError: string | null = null;
 
 		try {
-			if (mode === "SINGLE") {
-				palettes = [generatePalette(config as PaletteConfig)];
-			} else if (mode === "ARRAY") {
+			if (mode === "PALETTES") {
 				const arr = config as PaletteConfig[];
-				const selected = arr[activeIndex];
-				palettes = selected ? [generatePalette(selected)] : [];
+				palettes = arr.map(generatePalette);
 			} else {
 				const expanded = expandPalettesConfig(config as PalettesConfig);
 				palettes = expanded.map(generatePalette);
@@ -62,7 +76,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 		}
 
 		return { palettes, previewError };
-	}, [config, mode, activeIndex]);
+	}, [config, mode]);
 
 	const outOfGamutCount = useMemo(() => {
 		let count = 0;
@@ -76,9 +90,11 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 
 	useEffect(() => {
 		if (Array.isArray(initialConfig)) {
-			setMode("ARRAY");
+			setMode("PALETTES");
 			setConfig(
-				initialConfig.length ? initialConfig : [{ ...defaultPaletteConfig }],
+				initialConfig.length
+					? initialConfig
+					: [{ ...defaultPaletteConfig, id: randomUUIDv7() }],
 			);
 			return;
 		}
@@ -93,14 +109,18 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 			return;
 		}
 
-		setMode("SINGLE");
-		setConfig({
-			...defaultPaletteConfig,
-			...(initialConfig as PaletteConfig),
-		});
+		setMode("PALETTES");
+		setConfig([
+			{
+				...defaultPaletteConfig,
+				id: randomUUIDv7(),
+				...(initialConfig as PaletteConfig),
+			},
+		]);
 	}, [initialConfig]);
 
-	useInput((input, key) => {
+	useInput((input) => {
+		if (isRenaming) return;
 		if (status !== UI_TEXT.statusEditing) return;
 
 		if (input === "q") {
@@ -113,64 +133,66 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 			return;
 		}
 
+		if (input === "r") {
+			setIsRenaming(true);
+			return;
+		}
+
 		if (input === APP_TOGGLES.exportTokens.key) {
 			setExportTokensEnabled((prev) => !prev);
 			return;
 		}
 
-		if (input === "a" || input === "+") {
-			if (mode === "SINGLE") {
-				const singleConfig = config as Partial<PaletteConfig>;
-				const current: PaletteConfig = {
-					...defaultPaletteConfig,
-					name: singleConfig.name,
-					baseHue: singleConfig.baseHue ?? defaultPaletteConfig.baseHue,
-					hueShift: singleConfig.hueShift ?? defaultPaletteConfig.hueShift,
-					hueCurve: singleConfig.hueCurve ?? defaultPaletteConfig.hueCurve,
-					saturation:
-						singleConfig.saturation ?? defaultPaletteConfig.saturation,
-					lightness: singleConfig.lightness ?? defaultPaletteConfig.lightness,
-					shades: singleConfig.shades ?? defaultPaletteConfig.shades,
-					cmykSafe: singleConfig.cmykSafe ?? defaultPaletteConfig.cmykSafe,
-				};
-				setConfig([current, { ...current }]);
-				setMode("ARRAY");
-				setActiveIndex(1);
-				return;
-			}
-
-			if (mode === "ARRAY") {
-				const arr = [...(config as PaletteConfig[])];
-				const activePalette = arr[activeIndex] ?? { ...defaultPaletteConfig };
-				arr.push({ ...activePalette });
-				setConfig(arr);
-				setActiveIndex(arr.length - 1);
+		if (input === "+") {
+			if (mode === "PALETTES") {
+				const { newConfig, newActiveIndex } = addPalette(
+					config as PaletteConfig[],
+					activeIndex,
+					randomUUIDv7,
+				);
+				setConfig(newConfig);
+				setActiveIndex(newActiveIndex);
 			}
 			return;
 		}
 
 		if (input === "m") {
-			if (mode === "SINGLE") {
-				const current = config as PaletteConfig;
-				setConfig({
-					...defaultPalettesConfig,
-					hues: {
-						start: current.baseHue,
-						end: (current.baseHue + 60) % 360,
-						count: 3,
-						curve: "linear",
-					},
-					saturation: current.saturation,
-					lightness: current.lightness,
-					shades: current.shades,
-					cmykSafe: current.cmykSafe,
-				});
+			if (mode === "PALETTES") {
+				setPersistedArrayConfig(config as PaletteConfig[]);
+				if (persistedSpectrumConfig) {
+					setConfig(persistedSpectrumConfig);
+				} else {
+					setConfig({
+						...defaultPalettesConfig,
+					});
+				}
 				setMode("SPECTRUM");
+			} else if (mode === "SPECTRUM") {
+				setPersistedSpectrumConfig(config as PalettesConfig);
+				if (persistedArrayConfig) {
+					setConfig(persistedArrayConfig);
+					setActiveIndex(0);
+				} else {
+					const spec = config as PalettesConfig;
+					setConfig([
+						{
+							...defaultPaletteConfig,
+							id: randomUUIDv7(),
+							baseHue: spec.hues.start,
+							saturation: spec.saturation,
+							lightness: spec.lightness,
+							shades: spec.shades,
+							cmykSafe: spec.cmykSafe,
+						},
+					]);
+					setActiveIndex(0);
+				}
+				setMode("PALETTES");
 			}
 			return;
 		}
 
-		if (mode === "ARRAY") {
+		if (mode === "PALETTES") {
 			if (input === "[" || input === "{") {
 				setActiveIndex((i) => Math.max(0, i - 1));
 				return;
@@ -183,34 +205,24 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 				return;
 			}
 
-			if (key.delete || key.backspace) {
-				const arr = [...(config as PaletteConfig[])];
-				if (arr.length > 1) {
-					arr.splice(activeIndex, 1);
-					setConfig(arr);
-					setActiveIndex(Math.min(activeIndex, arr.length - 1));
-				} else {
-					setConfig(arr[0] ?? { ...defaultPaletteConfig });
-					setMode("SINGLE");
-					setActiveIndex(0);
-				}
+			if (input === "-") {
+				const { newConfig, newActiveIndex } = removePalette(
+					config as PaletteConfig[],
+					activeIndex,
+					activeIndex,
+				);
+				setConfig(newConfig);
+				setActiveIndex(newActiveIndex);
 				return;
 			}
 		}
-
-		if (mode === "SPECTRUM") {
-			const spec = config as PalettesConfig;
-			if (spec.hues.count <= 1 && input === "u") {
-				setConfig({
-					...defaultPaletteConfig,
-					baseHue: spec.hues.start,
-					saturation: spec.saturation,
-					lightness: spec.lightness,
-					shades: spec.shades,
-					cmykSafe: spec.cmykSafe,
-				});
-				setMode("SINGLE");
+		const numMatch = input.match(/^[1-9]$/);
+		if (numMatch) {
+			const targetIndex = parseInt(numMatch[0], 10) - 1;
+			if (targetIndex < previewState.palettes.length) {
+				setActiveIndex(targetIndex);
 			}
+			return;
 		}
 	});
 
@@ -218,23 +230,12 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 		setStatus(UI_TEXT.statusSaving);
 
 		try {
-			let configArray: PaletteConfig[] = [];
-
-			if (mode === "ARRAY") {
-				configArray = config as PaletteConfig[];
-			} else if (mode === "SPECTRUM") {
-				configArray = expandPalettesConfig(config as PalettesConfig);
-			} else {
-				configArray = [config as PaletteConfig];
-			}
-
-			const results = configArray.map(generatePalette);
-			const outputData = mode === "SINGLE" ? results[0] : results;
+			const outputData = previewState.palettes;
 			const tokensData = exportTokensEnabled
-				? exportFigmaTokens(results)
+				? exportFigmaTokens(outputData)
 				: undefined;
 
-			const res = await onSave(outputData, tokensData, {
+			const res = await onSave(config, mode, outputData, tokensData, {
 				exportTokens: exportTokensEnabled,
 			});
 
@@ -258,9 +259,45 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 		);
 	}
 
+	if (isRenaming) {
+		const activePaletteResult = previewState.palettes[activeIndex];
+		return (
+			<Box
+				padding={1}
+				flexDirection="column"
+				borderStyle="single"
+				borderColor="green"
+			>
+				<Text bold>Rename Palette</Text>
+				
+				{activePaletteResult && (
+					<Box flexDirection="row" marginY={1}>
+						{activePaletteResult.colors.slice(0, 11).map((color) => (
+							<Text key={color.shade} backgroundColor={color.hex}>
+								{"    "}
+							</Text>
+						))}
+					</Box>
+				)}
+
+				<Box flexDirection="row">
+					<Text>New Name: </Text>
+					<UncontrolledTextInput
+						onSubmit={(query) => {
+							const newConfig = renamePalette(config, mode, activeIndex, query);
+							setConfig(newConfig);
+							setIsRenaming(false);
+						}}
+					/>
+				</Box>
+				<Text color="#A0A0A0">(Press Enter to save)</Text>
+			</Box>
+		);
+	}
+
 	const onUpdateConfig = (updater: (prev: ConfigInput) => ConfigInput) => {
 		setConfig((prev) => {
-			if (mode === "ARRAY") {
+			if (mode === "PALETTES") {
 				const arr = [...(prev as PaletteConfig[])];
 				arr[activeIndex] = updater(
 					arr[activeIndex] || defaultPaletteConfig,
@@ -277,7 +314,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 				<Text bold color="cyan">
 					{UI_TEXT.title}
 				</Text>
-				<Text color="gray">
+				<Text color="#A0A0A0">
 					{UI_TEXT.modeLabel}:{" "}
 					<Text bold color="yellow">
 						{MODE_LABELS[mode]}
@@ -290,7 +327,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 					width={44}
 					marginRight={2}
 					borderStyle="single"
-					borderColor="gray"
+					borderColor="#A0A0A0"
 					flexDirection="column"
 				>
 					<Editor
@@ -304,7 +341,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 				<Box
 					flexGrow={1}
 					borderStyle="single"
-					borderColor="gray"
+					borderColor="#A0A0A0"
 					flexDirection="column"
 					paddingX={1}
 					paddingY={1}
@@ -320,17 +357,17 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 
 			<Box marginTop={1} flexDirection="row" justifyContent="space-between">
 				<Box flexDirection="column">
-					<Text color="gray">
-						{MODE_ACTIONS[mode].map((action, index) => (
+					<Text color="#A0A0A0">
+						{MODE_ACTIONS[mode]?.map((action, index) => (
 							<React.Fragment key={`${mode}-${action.key}-${action.label}`}>
 								<Text bold>{action.key} </Text>
 								{action.label}
-								{index < MODE_ACTIONS[mode].length - 1 ? "  " : ""}
+								{index < (MODE_ACTIONS[mode]?.length ?? 0) - 1 ? "  " : ""}
 							</React.Fragment>
 						))}
 					</Text>
 
-					<Text color="gray">
+					<Text color="#A0A0A0">
 						{NAVIGATION_ACTIONS.map((action, index) => (
 							<React.Fragment key={`${action.key}-${action.label}`}>
 								<Text bold>{action.key} </Text>
@@ -340,7 +377,7 @@ export function App({ initialConfig, onSave, exportTokens }: AppProps) {
 						))}
 					</Text>
 
-					<Text color={exportTokensEnabled ? "green" : "gray"}>
+					<Text color={exportTokensEnabled ? "green" : "#A0A0A0"}>
 						<Text bold>{APP_TOGGLES.exportTokens.key} </Text>
 						{APP_TOGGLES.exportTokens.label}:{" "}
 						<Text bold>{exportTokensEnabled ? "ON" : "OFF"}</Text>

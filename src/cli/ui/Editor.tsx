@@ -61,7 +61,7 @@ export function Editor({
 		const modeSpecific =
 			mode === "SPECTRUM"
 				? EDITOR_PROPERTIES.spectrumOnly
-				: EDITOR_PROPERTIES.singleOnly;
+				: EDITOR_PROPERTIES.palettesOnly;
 
 		return [...modeSpecific, ...EDITOR_PROPERTIES.common];
 	}, [mode]);

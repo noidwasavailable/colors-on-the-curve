@@ -72,17 +72,19 @@ export const MODE_LABELS: Record<UiMode, string> = {
 } as const;
 
 export const GLOBAL_ACTIONS: readonly KeyAction[] = [
+	{ key: "r", label: "Rename" },
+	{ key: "[ ] 1-9", label: "Select" },
+	{ key: "m", label: "Change Mode" },
 	{ key: "s", label: "Save & Exit" },
 	{ key: "q", label: "Quit" },
 ] as const;
 
 export const MODE_ACTIONS: Record<UiMode, readonly KeyAction[]> = {
 	PALETTES: [
-		{ key: "[ ]", label: "Paginate" },
-		{ key: "del", label: "Remove Palette" },
+		{ key: "-", label: "Remove Palette" },
 		{ key: "+", label: "Add Palette" },
 	],
-	SPECTRUM: [{ key: "u", label: "Unbox to Palette" }],
+	SPECTRUM: [],
 } as const;
 
 export const NAVIGATION_ACTIONS: readonly KeyAction[] = [
