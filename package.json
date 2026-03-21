@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run src/cli.tsx example.config.ts",
-    "cli": "bun run src/cli.tsx",
-    "gen-trans-tokens": "bun run src/transparencyTokensGenerator.ts"
+    "dev": "bun run src/cli/index.tsx example.config.ts",
+    "cli": "bun run src/cli/index.tsx",
+    "gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
