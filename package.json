@@ -1,8 +1,16 @@
 {
 	"name": "color-palette-generator",
-	"module": "index.ts",
+	"version": "0.1.0",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
 	"type": "module",
-	"private": true,
 	"scripts": {
 		"dev-cli": "bun --hot src/cli/index.tsx",
 		"cli": "bun run src/cli/index.tsx",

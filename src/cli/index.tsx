@@ -24,7 +24,7 @@ async function main() {
 	const exportTokensFromFlag = args.includes("--tokens");
 	const exportTransparencyFromFlag = args.includes("--transparency-tokens");
 
-	const outDir = outDirArg?.split("=")[1] || "data";
+	const outDir = outDirArg?.split("=")[1] || ".";
 
 	const fullPath = configPath ? resolve(process.cwd(), configPath) : null;
 	const baseName = configPath

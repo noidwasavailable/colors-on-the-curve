@@ -13,9 +13,7 @@ export function exportFigmaTokens(
 	for (const palette of arr) {
 		// Kebab-case the name (spaces → hyphens) then use "/" as the
 		// hierarchical separator between the name and the shade number.
-		const paletteName = palette.name
-			.toLowerCase()
-			.replace(/\s+/g, "-");
+		const paletteName = palette.name.toLowerCase().replace(/\s+/g, "-");
 		for (const color of palette.colors) {
 			const tokenName = `${paletteName}${CONNECTION_CHARACTER}${color.shade}`;
 			result[tokenName] = {

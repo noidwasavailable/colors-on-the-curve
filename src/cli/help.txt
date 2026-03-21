@@ -7,7 +7,7 @@ Arguments:
   configPath       Path to a .ts or .json config file to load. If omitted, uses default.
 
 Options:
-  --out-dir=<dir>          Directory to save generated palettes (default: "data")
+  --out-dir=<dir>          Directory to save generated palettes (default: cwd)
   --tokens                 Export Figma tokens alongside palettes
   --transparency-tokens    Export per-opacity transparency token files (10%–100%)
                            alongside the palette. Requires --tokens.

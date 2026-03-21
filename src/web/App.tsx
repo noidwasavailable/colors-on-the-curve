@@ -217,7 +217,10 @@ export function App() {
 			if (exportTransparencyEnabled) {
 				const transparencyFolder = zip.folder("transparency");
 				if (transparencyFolder) {
-					for (const { filename, tokens: tTokens } of buildTransparencyTokensList(tokens)) {
+					for (const {
+						filename,
+						tokens: tTokens,
+					} of buildTransparencyTokensList(tokens)) {
 						transparencyFolder.file(filename, JSON.stringify(tTokens, null, 2));
 					}
 				}

@@ -36,7 +36,9 @@ export function PreviewHeader({
 				</span>
 			</div>
 			<div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-				<div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+				<div
+					style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
+				>
 					<label
 						style={{
 							display: "flex",
