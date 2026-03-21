@@ -1,90 +1,136 @@
-import { resolve, basename, extname, join } from "path";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { basename, extname, join, resolve } from "node:path";
 import { render } from "ink";
-import { App } from "./ui/App";
-import type { ConfigInput } from "@/lib/types";
+import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
-
-interface SaveOptions {
-  exportTokens?: boolean;
-}
+import { generateTransparencyTokens } from "@/lib/figmaExporter";
+import type { ConfigInput } from "@/lib/types";
+import type { SaveFunction } from "./types";
+import { App } from "./ui/App";
 
 async function main() {
-  const args = process.argv.slice(2);
-  const configPath = args.find((a) => !a.startsWith("--"));
-  const outDirArg = args.find((a) => a.startsWith("--out-dir="));
-  const exportTokensFromFlag = args.includes("--tokens");
+	const args = process.argv.slice(2);
 
-  const outDir = outDirArg?.split("=")[1] || "data";
+	if (args.includes("--help") || args.includes("-h")) {
+		const helpText = await Bun.file(
+			new URL("./help.txt", import.meta.url),
+		).text();
+		console.log(helpText);
+		process.exit(0);
+	}
 
-  const fullPath = configPath ? resolve(process.cwd(), configPath) : null;
-  const baseName = configPath
-    ? basename(configPath, extname(configPath))
-    : "palette";
+	const configPath = args.find((a) => !a.startsWith("--"));
+	const outDirArg = args.find((a) => a.startsWith("--out-dir="));
+	const exportTokensFromFlag = args.includes("--tokens");
+	const exportTransparencyFromFlag = args.includes("--transparency-tokens");
 
-  try {
-    let initialConfig: ConfigInput = { ...defaultPaletteConfig };
+	const outDir = outDirArg?.split("=")[1] || ".";
 
-    if (fullPath) {
-      const configModule = await import(fullPath);
-      const loadedConfig: ConfigInput | undefined =
-        configModule.default || configModule.config;
+	const fullPath = configPath ? resolve(process.cwd(), configPath) : null;
+	const baseName = configPath
+		? basename(configPath, extname(configPath))
+		: "palette";
 
-      if (!loadedConfig) {
-        console.error(
-          'Config file must export a default object/array or a named export "config".',
-        );
-        process.exit(1);
-      }
+	try {
+		let initialConfig: ConfigInput = { ...defaultPaletteConfig };
+		let initialMode: UiMode = "PALETTES";
 
-      initialConfig = loadedConfig;
-    }
+		if (fullPath) {
+			const configModule = await import(fullPath);
+			const loadedConfig =
+				configModule.default || configModule.config || configModule;
 
-    const outDirPath = resolve(process.cwd(), outDir);
+			if (!loadedConfig) {
+				console.error(
+					'Config file must export a default object/array or a named export "config".',
+				);
+				process.exit(1);
+			}
 
-    const onSave = async (
-      outputData: any,
-      tokenData?: any,
-      options?: SaveOptions,
-    ) => {
-      await mkdir(outDirPath, { recursive: true });
+			if (
+				loadedConfig.version === 1 &&
+				loadedConfig.mode &&
+				loadedConfig.config
+			) {
+				initialConfig = loadedConfig.config;
+				initialMode = loadedConfig.mode;
+			} else {
+				initialConfig = loadedConfig;
+			}
+		}
 
-      const outFilename = baseName + ".json";
-      const outFilePath = join(outDirPath, outFilename);
-      await writeFile(
-        outFilePath,
-        JSON.stringify(outputData, null, 2),
-        "utf-8",
-      );
+		const outDirPath = resolve(process.cwd(), outDir);
 
-      const shouldExportTokens = options?.exportTokens ?? exportTokensFromFlag;
+		const onSave: SaveFunction = async (
+			config,
+			mode,
+			outputData,
+			tokenData,
+			options,
+		) => {
+			await mkdir(outDirPath, { recursive: true });
 
-      let tokensSaved = false;
-      const tokensFilePath = join(outDirPath, baseName + ".tokens.json");
+			const outFilename = `${baseName}.json`;
+			const outFilePath = join(outDirPath, outFilename);
 
-      if (shouldExportTokens && tokenData) {
-        await writeFile(
-          tokensFilePath,
-          JSON.stringify(tokenData, null, 2),
-          "utf-8",
-        );
-        tokensSaved = true;
-      }
+			const exportData = {
+				version: 1,
+				mode,
+				config,
+				palettes: outputData,
+			};
 
-      return { outFilePath, tokensSaved, tokensFilePath };
-    };
+			await writeFile(
+				outFilePath,
+				JSON.stringify(exportData, null, 2),
+				"utf-8",
+			);
 
-    render(
-      <App
-        initialConfig={initialConfig}
-        onSave={onSave}
-        exportTokens={exportTokensFromFlag}
-      />,
-    );
-  } catch (err) {
-    console.error("Failed to start CLI:", err);
-    process.exit(1);
-  }
+			const shouldExportTokens = options?.exportTokens ?? exportTokensFromFlag;
+			const shouldExportTransparency =
+				options?.transparencyTokens ?? exportTransparencyFromFlag;
+
+			let tokensSaved = false;
+			const tokensFilePath = join(outDirPath, `${baseName}.tokens.json`);
+			let transparencyTokensSaved = false;
+			const transparencyDir = join(outDirPath, "transparency");
+
+			if (shouldExportTokens && tokenData) {
+				await writeFile(
+					tokensFilePath,
+					JSON.stringify(tokenData, null, 2),
+					"utf-8",
+				);
+				tokensSaved = true;
+
+				if (shouldExportTransparency) {
+					await generateTransparencyTokens(tokenData, transparencyDir);
+					transparencyTokensSaved = true;
+				}
+			}
+
+			return {
+				outFilePath,
+				tokensSaved,
+				tokensFilePath,
+				transparencyTokensSaved,
+				transparencyDir,
+			};
+		};
+
+		render(
+			<App
+				initialConfig={initialConfig}
+				initialMode={initialMode}
+				onSave={onSave}
+				exportTokens={exportTokensFromFlag}
+				exportTransparencyTokens={exportTransparencyFromFlag}
+			/>,
+		);
+	} catch (err) {
+		console.error("Failed to start CLI:", err);
+		process.exit(1);
+	}
 }
 
 main();

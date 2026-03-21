@@ -1,0 +1,31 @@
+Color Palette Generator CLI
+
+Usage:
+  bun run cli [configPath] [options]
+
+Arguments:
+  configPath       Path to a .ts or .json config file to load. If omitted, uses default.
+
+Options:
+  --out-dir=<dir>          Directory to save generated palettes (default: cwd)
+  --tokens                 Export Figma tokens alongside palettes
+  --transparency-tokens    Export per-opacity transparency token files (10%–100%)
+                           alongside the palette. Requires --tokens.
+  -h, --help               Show this help message
+
+Interactive Controls (PALETTES mode):
+  [r]              Rename current palette
+  [m]              Switch to SPECTRUM mode
+  [+]              Add a new palette (shifts hue)
+  [-]              Remove current palette
+  [1-9]            Select palette by index
+  [[ / ]]          Paginate palettes
+  [↑/↓]            Select property to edit
+  [←/→]            Change property value (Hold Shift for x10)
+
+Global Actions:
+  [s]              Save variations to JSON and exit
+  [q]              Quit without saving
+  [h]              Show this help message
+  [t]              Toggle Figma token export on save
+  [p]              Toggle transparency token export on save (requires tokens ON)

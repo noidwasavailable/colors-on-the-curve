@@ -1,0 +1,130 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700&display=swap");
+
+:root {
+	/* Core Colors - Dark Mode Only */
+	--bg-base: #0f1115;
+	--bg-panel: rgba(25, 28, 35, 0.7);
+	--bg-panel-hover: rgba(35, 38, 45, 0.8);
+	--border-color: rgba(255, 255, 255, 0.08);
+	--border-color-focus: rgba(255, 255, 255, 0.2);
+	--text-main: #f3f4f6;
+	--text-muted: #9ca3af;
+	--accent-color: #6366f1;
+	--accent-hover: #818cf8;
+	--danger-color: #ef4444;
+
+	/* Layout Tokens */
+	--sidebar-width: 320px;
+	--pane-gap: 1.5rem;
+	--radius-sm: 6px;
+	--radius-md: 12px;
+	--radius-lg: 20px;
+
+	/* Typography */
+	--font-sans: "Inter", system-ui, sans-serif;
+	--font-display: "Outfit", system-ui, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--bg-base);
+	color: var(--text-main);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	min-height: 100vh;
+	width: 100%;
+	overflow: hidden; /* Prevent body scroll, manage in panes */
+}
+
+/* Background gradient effect */
+body::before {
+	content: "";
+	position: fixed;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background:
+		radial-gradient(
+			circle at 50% 50%,
+			rgba(99, 102, 241, 0.08) 0%,
+			transparent 60%
+		),
+		radial-gradient(
+			circle at 80% 20%,
+			rgba(236, 72, 153, 0.05) 0%,
+			transparent 50%
+		);
+	z-index: -1;
+	pointer-events: none;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+/* Scrollbar beautification */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+/* Generic Utilities */
+.text-muted {
+	color: var(--text-muted);
+}
+.text-sm {
+	font-size: 0.875rem;
+}
+.font-mono {
+	font-family: var(--font-mono);
+}
+
+/* Buttons */
+.btn {
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--border-color);
+	color: var(--text-main);
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius-sm);
+	font-family: var(--font-sans);
+	font-weight: 500;
+	font-size: 0.875rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: var(--border-color-focus);
+}
+
+.btn.active {
+	background: var(--accent-color);
+	border-color: var(--accent-color);
+	color: white;
+}
+
+.btn.active:hover {
+	background: var(--accent-hover);
+}
