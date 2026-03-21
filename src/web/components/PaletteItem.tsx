@@ -9,6 +9,7 @@ interface PaletteItemProps {
 	index: number;
 	isActive: boolean;
 	mode: UiMode;
+	canRemove: boolean;
 	onSelectPalette: () => void;
 	onRemovePalette: () => void;
 	onRenamePalette: (name: string) => void;
@@ -19,6 +20,7 @@ export function PaletteItem({
 	index,
 	isActive,
 	mode,
+	canRemove,
 	onSelectPalette,
 	onRemovePalette,
 	onRenamePalette,
@@ -180,7 +182,7 @@ export function PaletteItem({
 					>
 						{palette.colors.length} shades
 					</span>
-					{mode === "PALETTES" && (
+					{mode === "PALETTES" && canRemove && (
 						<button
 							type="button"
 							className="btn"

@@ -54,6 +54,7 @@ export function Preview({
 					index={i}
 					mode={mode}
 					isActive={mode === "PALETTES" && activeIndex === i}
+					canRemove={palettes.length > 1}
 					onSelectPalette={() => onSelectPalette(i)}
 					onRemovePalette={() => onRemovePalette(i)}
 					onRenamePalette={(name) => onRenamePalette(i, name)}
