@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { generatePalette, expandPalettesConfig } from "../generator";
 import type {
   ConfigInput,
   PaletteConfig,
   PalettesConfig,
   PaletteResult,
-} from "../types";
-import { PREVIEW_UI, UI_TEXT, type UiMode } from "../constants";
+} from "@/lib/types";
+import { PREVIEW_UI, UI_TEXT, type UiMode } from "@/lib/constants";
 
 interface PalettePreviewProps {
   config: ConfigInput;

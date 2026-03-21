@@ -1,4 +1,4 @@
-import type { PalettesConfig } from '../src/types';
+import type { PalettesConfig } from '@/lib/types';
 
 const palettesConfig: PalettesConfig = {
   names: ["aaa", "bbb", "ccc"],

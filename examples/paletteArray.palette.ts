@@ -1,4 +1,4 @@
-import type { PaletteConfig } from '../src/types';
+import type { PaletteConfig } from '@/lib/types';
 
 const config1: PaletteConfig = {
   name: "Forest Green",

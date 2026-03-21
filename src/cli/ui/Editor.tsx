@@ -6,7 +6,7 @@ import {
   type EditorPropertyMeta,
   type PropertyPath,
   type UiMode,
-} from "../constants";
+} from "@/lib/constants";
 
 interface EditorProps {
   config: any;

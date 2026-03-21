@@ -1,10 +1,9 @@
 import { resolve, basename, extname, join } from "path";
 import { mkdir, writeFile } from "fs/promises";
-import React from "react";
 import { render } from "ink";
 import { App } from "./ui/App";
-import type { ConfigInput } from "./types";
-import { defaultPaletteConfig } from "./defaults";
+import type { ConfigInput } from "@/lib/types";
+import { defaultPaletteConfig } from "@/lib/defaults";
 
 interface SaveOptions {
   exportTokens?: boolean;

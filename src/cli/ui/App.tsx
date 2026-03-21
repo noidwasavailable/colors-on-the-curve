@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Box, Text, useApp, useInput } from "ink";
-import type { ConfigInput, PaletteConfig, PalettesConfig } from "../types";
-import { defaultPaletteConfig, defaultPalettesConfig } from "../defaults";
+import type { ConfigInput, PaletteConfig, PalettesConfig } from "@/lib/types";
+import { defaultPaletteConfig, defaultPalettesConfig } from "@/lib/defaults";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
-import { generatePalette, expandPalettesConfig } from "../generator";
-import type { PaletteResult } from "../types";
-import { exportFigmaTokens } from "../figmaExporter";
+import { generatePalette, expandPalettesConfig } from "@/lib/generator";
+import type { PaletteResult } from "@/lib/types";
+import { exportFigmaTokens } from "@/lib/figmaExporter";
 import {
   APP_TOGGLES,
   GLOBAL_ACTIONS,
@@ -15,7 +15,7 @@ import {
   NAVIGATION_ACTIONS,
   UI_TEXT,
   type UiMode,
-} from "../constants";
+} from "@/lib/constants";
 
 interface SaveOptions {
   exportTokens?: boolean;

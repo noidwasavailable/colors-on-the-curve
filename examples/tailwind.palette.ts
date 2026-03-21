@@ -1,4 +1,4 @@
-import type { PalettesConfig } from '../src/types';
+import type { PalettesConfig } from '@/lib/types';
 
 const config: PalettesConfig = {
   names: [
