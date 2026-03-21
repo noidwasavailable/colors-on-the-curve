@@ -19,6 +19,7 @@ export interface SaturationConfig {
 }
 
 export interface PaletteConfig {
+	id?: string;
 	name?: string;
 	baseHue: number; // 0 - 360
 	hueShift?: number; // total shift in degrees from lightest to darkest (e.g. -20 or 15)
@@ -40,6 +41,7 @@ export interface ColorResult {
 }
 
 export interface PaletteResult {
+	id?: string;
 	name: string;
 	colors: ColorResult[];
 }

@@ -140,6 +140,7 @@ export function generatePalette(config: PaletteConfig): PaletteResult {
 		})();
 
 	return {
+		id: config.id,
 		name: paletteName,
 		colors,
 	};
