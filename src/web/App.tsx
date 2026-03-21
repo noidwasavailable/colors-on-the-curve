@@ -14,10 +14,10 @@ import { Preview } from "./components/Preview";
 import "./index.css";
 
 export function App() {
-	const [mode, setMode] = useState<UiMode>("SINGLE");
-	const [config, setConfig] = useState<ConfigInput>({
-		...defaultPaletteConfig,
-	});
+	const [mode, setMode] = useState<UiMode>("PALETTES");
+	const [config, setConfig] = useState<ConfigInput>([
+		{ ...defaultPaletteConfig, id: crypto.randomUUID() },
+	]);
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [exportTokensEnabled, setExportTokensEnabled] = useState(false);
 	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
@@ -32,9 +32,7 @@ export function App() {
 		let previewError: string | null = null;
 
 		try {
-			if (mode === "SINGLE") {
-				palettes = [generatePalette(config as PaletteConfig)];
-			} else if (mode === "ARRAY") {
+			if (mode === "PALETTES") {
 				const arr = config as PaletteConfig[];
 				palettes = arr.map(generatePalette);
 			} else {
@@ -61,11 +59,11 @@ export function App() {
 	}, [previewState.palettes]);
 
 	const activeConfig =
-		mode === "ARRAY" ? (config as PaletteConfig[])[activeIndex] : config;
+		mode === "PALETTES" ? (config as PaletteConfig[])[activeIndex] : config;
 
 	const handleConfigChange = (updater: (prev: ConfigInput) => ConfigInput) => {
 		setConfig((prev) => {
-			if (mode === "ARRAY") {
+			if (mode === "PALETTES") {
 				const arr = [...(prev as PaletteConfig[])];
 				arr[activeIndex] = updater(
 					arr[activeIndex] || defaultPaletteConfig,
@@ -79,26 +77,13 @@ export function App() {
 	const handleModeChange = (newMode: UiMode) => {
 		if (mode === newMode) return;
 
-		if (mode === "ARRAY") {
+		if (mode === "PALETTES") {
 			setPersistedArrayConfig(config as PaletteConfig[]);
 		} else if (mode === "SPECTRUM") {
 			setPersistedSpectrumConfig(config as PalettesConfig);
 		}
 
-		if (newMode === "SINGLE") {
-			const current =
-				mode === "ARRAY"
-					? ((config as PaletteConfig[])[0] ?? defaultPaletteConfig)
-					: (config as PalettesConfig);
-			setConfig({
-				...defaultPaletteConfig,
-				baseHue: "hues" in current ? current.hues.start : current.baseHue,
-				saturation: current.saturation,
-				lightness: current.lightness,
-				shades: current.shades,
-				cmykSafe: current.cmykSafe,
-			});
-		} else if (newMode === "ARRAY") {
+		if (newMode === "PALETTES") {
 			if (persistedArrayConfig) {
 				setConfig(persistedArrayConfig);
 				setActiveIndex(0);
@@ -121,25 +106,14 @@ export function App() {
 			if (persistedSpectrumConfig) {
 				setConfig(persistedSpectrumConfig);
 			} else {
-				const current =
-					mode === "ARRAY"
-						? ((config as PaletteConfig[])[0] ?? defaultPaletteConfig)
-						: (config as PaletteConfig);
-				setConfig({
-					...defaultPalettesConfig,
-					hues: {
-						...defaultPalettesConfig.hues,
-						start: current.baseHue,
-						end: (current.baseHue + 60) % 360,
-					},
-				});
+				setConfig(defaultPalettesConfig);
 			}
 		}
 		setMode(newMode);
 	};
 
 	const handleAddPalette = () => {
-		if (mode !== "ARRAY") return;
+		if (mode !== "PALETTES") return;
 		const arr = [...(config as PaletteConfig[])];
 		const activePalette = arr[activeIndex] ?? { ...defaultPaletteConfig };
 		const nextHue = (activePalette.baseHue + 20) % 360;
@@ -153,7 +127,7 @@ export function App() {
 	};
 
 	const handleRemovePalette = (indexToRemove: number) => {
-		if (mode !== "ARRAY") return;
+		if (mode !== "PALETTES") return;
 		const arr = [...(config as PaletteConfig[])];
 		if (arr.length > 1) {
 			arr.splice(indexToRemove, 1);
@@ -169,9 +143,7 @@ export function App() {
 	};
 
 	const handleRenamePalette = (index: number, newName: string) => {
-		if (mode === "SINGLE") {
-			setConfig({ ...config, name: newName } as ConfigInput);
-		} else if (mode === "ARRAY") {
+		if (mode === "PALETTES") {
 			const arr = [...(config as PaletteConfig[])];
 			arr[index] = { ...(arr[index] || defaultPaletteConfig), name: newName };
 			setConfig(arr);

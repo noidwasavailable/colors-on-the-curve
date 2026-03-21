@@ -59,7 +59,7 @@ export function Editor({
 		const modeSpecific =
 			mode === "SPECTRUM"
 				? EDITOR_PROPERTIES.spectrumOnly
-				: EDITOR_PROPERTIES.singleOnly;
+				: EDITOR_PROPERTIES.palettesOnly;
 		return [...modeSpecific, ...EDITOR_PROPERTIES.common];
 	}, [mode]);
 
@@ -74,17 +74,10 @@ export function Editor({
 				<div style={{ display: "flex", gap: "0.5rem" }}>
 					<button
 						type="button"
-						className={`btn ${mode === "SINGLE" ? "active" : ""}`}
-						onClick={() => onModeChange("SINGLE")}
+						className={`btn ${mode === "PALETTES" ? "active" : ""}`}
+						onClick={() => onModeChange("PALETTES")}
 					>
-						Single
-					</button>
-					<button
-						type="button"
-						className={`btn ${mode === "ARRAY" ? "active" : ""}`}
-						onClick={() => onModeChange("ARRAY")}
-					>
-						Array
+						Palettes
 					</button>
 					<button
 						type="button"

@@ -1,6 +1,6 @@
 import type { CurveType } from "./types";
 
-export type UiMode = "SINGLE" | "ARRAY" | "SPECTRUM";
+export type UiMode = "PALETTES" | "SPECTRUM";
 
 export type PropertyPath = readonly [string] | readonly [string, string];
 
@@ -67,8 +67,7 @@ export const UI_TEXT = {
 } as const;
 
 export const MODE_LABELS: Record<UiMode, string> = {
-	SINGLE: "Single Palette",
-	ARRAY: "Palette Array",
+	PALETTES: "Palettes",
 	SPECTRUM: "Spectrum",
 } as const;
 
@@ -78,16 +77,12 @@ export const GLOBAL_ACTIONS: readonly KeyAction[] = [
 ] as const;
 
 export const MODE_ACTIONS: Record<UiMode, readonly KeyAction[]> = {
-	SINGLE: [
-		{ key: "+", label: "Add Palette Mode" },
-		{ key: "m", label: "Multi-Hue Mode" },
-	],
-	ARRAY: [
+	PALETTES: [
 		{ key: "[ ]", label: "Paginate" },
 		{ key: "del", label: "Remove Palette" },
 		{ key: "+", label: "Add Palette" },
 	],
-	SPECTRUM: [{ key: "u", label: "Unbox to Single (if count=1)" }],
+	SPECTRUM: [{ key: "u", label: "Unbox to Palette" }],
 } as const;
 
 export const NAVIGATION_ACTIONS: readonly KeyAction[] = [
@@ -106,7 +101,7 @@ export const APP_TOGGLES = {
 } as const;
 
 export const EDITOR_PROPERTIES = {
-	singleOnly: [
+	palettesOnly: [
 		{
 			id: "baseHue",
 			kind: "number",

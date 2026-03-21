@@ -151,7 +151,7 @@ export function Preview({
 			}}
 		>
 			{palettes.map((palette, i) => {
-				const isActive = mode === "ARRAY" && activeIndex === i;
+				const isActive = mode === "PALETTES" && activeIndex === i;
 				const isEditing = editingIndex === i;
 
 				return (
@@ -170,16 +170,16 @@ export function Preview({
 								? "rgba(255, 255, 255, 0.05)"
 								: "transparent",
 							borderRadius: "var(--radius-lg)",
-							cursor: mode === "ARRAY" ? "pointer" : "default",
+							cursor: mode === "PALETTES" ? "pointer" : "default",
 							transition: "all 0.2s ease",
 						}}
-						role={mode === "ARRAY" ? "button" : undefined}
-						tabIndex={mode === "ARRAY" ? 0 : undefined}
+						role={mode === "PALETTES" ? "button" : undefined}
+						tabIndex={mode === "PALETTES" ? 0 : undefined}
 						onClick={() => {
-							if (mode === "ARRAY") onSelectPalette(i);
+							if (mode === "PALETTES") onSelectPalette(i);
 						}}
 						onKeyDown={(e) => {
-							if (mode === "ARRAY" && (e.key === "Enter" || e.key === " ")) {
+							if (mode === "PALETTES" && (e.key === "Enter" || e.key === " ")) {
 								e.preventDefault();
 								onSelectPalette(i);
 							}
@@ -307,7 +307,7 @@ export function Preview({
 								<span className="text-muted font-mono text-sm">
 									{palette.colors.length} shades
 								</span>
-								{mode === "ARRAY" && (
+								{mode === "PALETTES" && (
 									<button
 										type="button"
 										className="btn"
@@ -353,7 +353,7 @@ export function Preview({
 				);
 			})}
 
-			{mode === "ARRAY" && (
+			{mode === "PALETTES" && (
 				<button
 					type="button"
 					className="btn"
