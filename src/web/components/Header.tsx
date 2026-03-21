@@ -1,7 +1,12 @@
+import { InfoCard } from "./InfoCard";
+
 const styles = {
 	header: {
 		padding: "1.5rem",
 		borderBottom: "1px solid var(--border-color)",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
 	},
 	h1: {
 		fontFamily: "var(--font-display)",
@@ -18,6 +23,7 @@ export function Header() {
 	return (
 		<header style={styles.header}>
 			<h1 style={styles.h1}>Colors on the Curve</h1>
+			<InfoCard />
 		</header>
 	);
 }
