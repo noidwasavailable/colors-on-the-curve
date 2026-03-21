@@ -56,7 +56,7 @@ const appStyles = {
 		flexDirection: "column",
 		overflow: "hidden",
 		boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-	}
+	},
 } as const;
 
 export function App() {
@@ -204,7 +204,14 @@ export function App() {
 	const handleExport = () => {
 		if (previewState.palettes.length === 0) return;
 
-		const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(previewState.palettes, null, 2))}`;
+		const exportData = {
+			version: 1,
+			mode,
+			config,
+			palettes: previewState.palettes,
+		};
+
+		const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(exportData, null, 2))}`;
 		const a = document.createElement("a");
 		a.href = dataStr;
 		a.download = "palettes.json";
@@ -215,9 +222,40 @@ export function App() {
 			const tokensStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(tokens, null, 2))}`;
 			const t = document.createElement("a");
 			t.href = tokensStr;
-			t.download = "tokens.json";
+			t.download = "palettes.tokens.json";
 			t.click();
 		}
+	};
+
+	const handleImport = () => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".json";
+		input.onchange = (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (!file) return;
+
+			const reader = new FileReader();
+			reader.onload = (re) => {
+				try {
+					const content = JSON.parse(re.target?.result as string);
+					if (content.config && content.mode) {
+						setMode(content.mode);
+						setConfig(content.config);
+						setActiveIndex(0);
+					} else {
+						window.alert(
+							"Invalid JSON format. Make sure it was exported from this app.",
+						);
+					}
+				} catch (err) {
+					console.error("Import error:", err);
+					window.alert("Error parsing JSON file.");
+				}
+			};
+			reader.readAsText(file);
+		};
+		input.click();
 	};
 
 	return (
@@ -241,6 +279,7 @@ export function App() {
 					exportTokensEnabled={exportTokensEnabled}
 					setExportTokensEnabled={setExportTokensEnabled}
 					onExport={handleExport}
+					onImport={handleImport}
 				/>
 				{previewState.previewError && (
 					<div
@@ -265,8 +304,6 @@ export function App() {
 			</main>
 		</div>
 	);
-
-
 }
 
 export default App;

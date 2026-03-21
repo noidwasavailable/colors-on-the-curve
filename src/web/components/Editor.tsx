@@ -70,7 +70,15 @@ export function Editor({
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 			<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-				<span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-muted)" }}>Mode</span>
+				<span
+					style={{
+						fontSize: "0.875rem",
+						fontWeight: 500,
+						color: "var(--text-muted)",
+					}}
+				>
+					Mode
+				</span>
 				<div style={{ display: "flex", gap: "0.5rem" }}>
 					<button
 						type="button"
@@ -104,7 +112,14 @@ export function Editor({
 					if (prop.kind === "number") {
 						const numValue = typeof rawValue === "number" ? rawValue : prop.min;
 						return (
-							<div key={prop.id} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+							<div
+								key={prop.id}
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "0.5rem",
+								}}
+							>
 								<div
 									style={{
 										display: "flex",
@@ -115,7 +130,11 @@ export function Editor({
 								>
 									<label
 										htmlFor={prop.id}
-										style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-muted)" }}
+										style={{
+											fontSize: "0.875rem",
+											fontWeight: 500,
+											color: "var(--text-muted)",
+										}}
 										title={prop.description}
 									>
 										{prop.label}
@@ -142,7 +161,11 @@ export function Editor({
 								)}
 								{prop.description && (
 									<div
-										style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "0.25rem" }}
+										style={{
+											color: "var(--text-muted)",
+											fontSize: "0.75rem",
+											marginTop: "0.25rem",
+										}}
 									>
 										{prop.description}
 									</div>
@@ -165,12 +188,22 @@ export function Editor({
 								}}
 							>
 								<div style={{ display: "flex", flexDirection: "column" }}>
-									<span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-muted)" }} title={prop.description}>
+									<span
+										style={{
+											fontSize: "0.875rem",
+											fontWeight: 500,
+											color: "var(--text-muted)",
+										}}
+										title={prop.description}
+									>
 										{prop.label}
 									</span>
 									{prop.description && (
 										<span
-											style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}
+											style={{
+												color: "var(--text-muted)",
+												fontSize: "0.75rem",
+											}}
 										>
 											{prop.description}
 										</span>
@@ -189,10 +222,21 @@ export function Editor({
 
 					if (prop.kind === "select") {
 						return (
-							<div key={prop.id} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+							<div
+								key={prop.id}
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "0.5rem",
+								}}
+							>
 								<label
 									htmlFor={prop.id}
-									style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-muted)" }}
+									style={{
+										fontSize: "0.875rem",
+										fontWeight: 500,
+										color: "var(--text-muted)",
+									}}
 									title={prop.description}
 								>
 									{prop.label}
@@ -205,7 +249,11 @@ export function Editor({
 								/>
 								{prop.description && (
 									<div
-										style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "-0.25rem" }}
+										style={{
+											color: "var(--text-muted)",
+											fontSize: "0.75rem",
+											marginTop: "-0.25rem",
+										}}
 									>
 										{prop.description}
 									</div>

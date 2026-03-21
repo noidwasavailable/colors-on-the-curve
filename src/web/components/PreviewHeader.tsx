@@ -3,6 +3,7 @@ interface PreviewHeaderProps {
 	exportTokensEnabled: boolean;
 	setExportTokensEnabled: (enabled: boolean) => void;
 	onExport: () => void;
+	onImport: () => void;
 }
 
 export function PreviewHeader({
@@ -10,6 +11,7 @@ export function PreviewHeader({
 	exportTokensEnabled,
 	setExportTokensEnabled,
 	onExport,
+	onImport,
 }: PreviewHeaderProps) {
 	return (
 		<div
@@ -25,7 +27,9 @@ export function PreviewHeader({
 				<h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>
 					Preview
 				</h2>
-				<span style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>{paletteCount} palettes</span>
+				<span style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
+					{paletteCount} palettes
+				</span>
 			</div>
 			<div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
 				<label
@@ -45,14 +49,19 @@ export function PreviewHeader({
 					/>
 					Figma Tokens
 				</label>
-				<button
-					type="button"
-					className="btn active"
-					onClick={onExport}
-					disabled={paletteCount === 0}
-				>
-					Export JSON
-				</button>
+				<div style={{ display: "flex", gap: "0.5rem" }}>
+					<button type="button" className="btn" onClick={onImport}>
+						Import JSON
+					</button>
+					<button
+						type="button"
+						className="btn active"
+						onClick={onExport}
+						disabled={paletteCount === 0}
+					>
+						Export JSON
+					</button>
+				</div>
 			</div>
 		</div>
 	);

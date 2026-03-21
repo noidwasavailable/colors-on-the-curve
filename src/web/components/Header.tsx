@@ -11,7 +11,7 @@ const styles = {
 		background: "linear-gradient(135deg, #fff 0%, #a5b4fc 100%)",
 		WebkitBackgroundClip: "text",
 		WebkitTextFillColor: "transparent",
-	}
+	},
 } as const;
 
 export function Header() {

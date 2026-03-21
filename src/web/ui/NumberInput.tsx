@@ -42,44 +42,44 @@ export function NumberInput({
 
 	return (
 		<>
-		<style>{styles}</style>
-		<div style={{ display: "flex", gap: "0.25rem", ...style }}>
-			<button
-				type="button"
-				className="btn"
-				style={{ padding: "0 0.5rem", height: "2rem" }}
-				onClick={handleDec}
-				disabled={value <= min}
-			>
-				−
-			</button>
-			<input
-				id={id}
-				type="number"
-				className={`number-input ${className}`}
-				value={value}
-				onChange={(e) => onChange(Number(e.target.value))}
-				min={min}
-				max={max}
-				step={step}
-				style={{
-					flex: 1,
-					textAlign: "center",
-					height: "2rem",
-					padding: "0.2rem",
-					width: "4rem",
-				}}
-			/>
-			<button
-				type="button"
-				className="btn"
-				style={{ padding: "0 0.5rem", height: "2rem" }}
-				onClick={handleInc}
-				disabled={value >= max}
-			>
-				+
-			</button>
-		</div>
+			<style>{styles}</style>
+			<div style={{ display: "flex", gap: "0.25rem", ...style }}>
+				<button
+					type="button"
+					className="btn"
+					style={{ padding: "0 0.5rem", height: "2rem" }}
+					onClick={handleDec}
+					disabled={value <= min}
+				>
+					−
+				</button>
+				<input
+					id={id}
+					type="number"
+					className={`number-input ${className}`}
+					value={value}
+					onChange={(e) => onChange(Number(e.target.value))}
+					min={min}
+					max={max}
+					step={step}
+					style={{
+						flex: 1,
+						textAlign: "center",
+						height: "2rem",
+						padding: "0.2rem",
+						width: "4rem",
+					}}
+				/>
+				<button
+					type="button"
+					className="btn"
+					style={{ padding: "0 0.5rem", height: "2rem" }}
+					onClick={handleInc}
+					disabled={value >= max}
+				>
+					+
+				</button>
+			</div>
 		</>
 	);
 }

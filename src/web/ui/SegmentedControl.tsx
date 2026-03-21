@@ -39,19 +39,19 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
 	return (
 		<>
-		<style>{styles}</style>
-		<div className="segmented-control" id={id}>
-			{options.map((opt) => (
-				<button
-					key={opt.value}
-					type="button"
-					className={`segmented-btn ${value === opt.value ? "active" : ""}`}
-					onClick={() => onChange(opt.value)}
-				>
-					{opt.label}
-				</button>
-			))}
-		</div>
+			<style>{styles}</style>
+			<div className="segmented-control" id={id}>
+				{options.map((opt) => (
+					<button
+						key={opt.value}
+						type="button"
+						className={`segmented-btn ${value === opt.value ? "active" : ""}`}
+						onClick={() => onChange(opt.value)}
+					>
+						{opt.label}
+					</button>
+				))}
+			</div>
 		</>
 	);
 }

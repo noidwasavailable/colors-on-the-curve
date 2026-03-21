@@ -42,28 +42,28 @@ export function SliderInput({
 }: SliderInputProps) {
 	return (
 		<>
-		<style>{styles}</style>
-		<div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-			<input
-				type="range"
-				className="slider-input"
-				min={min}
-				max={max}
-				step={step}
-				value={value}
-				onChange={(e) => onChange(Number(e.target.value))}
-				style={{ flex: 1 }}
-			/>
-			<NumberInput
-				id={id}
-				value={value}
-				min={min}
-				max={max}
-				step={step}
-				onChange={onChange}
-				style={{ width: "100px" }}
-			/>
-		</div>
+			<style>{styles}</style>
+			<div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+				<input
+					type="range"
+					className="slider-input"
+					min={min}
+					max={max}
+					step={step}
+					value={value}
+					onChange={(e) => onChange(Number(e.target.value))}
+					style={{ flex: 1 }}
+				/>
+				<NumberInput
+					id={id}
+					value={value}
+					min={min}
+					max={max}
+					step={step}
+					onChange={onChange}
+					style={{ width: "100px" }}
+				/>
+			</div>
 		</>
 	);
 }
