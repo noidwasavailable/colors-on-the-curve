@@ -104,7 +104,7 @@ body::before {
 	border: 1px solid var(--border-color);
 	color: var(--text-main);
 	padding: 0.5rem 1rem;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-sm);
 	font-family: var(--font-sans);
 	font-weight: 500;
 	font-size: 0.875rem;

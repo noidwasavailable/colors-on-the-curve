@@ -33,14 +33,12 @@ export function PaletteItem({
 				display: "flex",
 				flexDirection: "column",
 				gap: "0.5rem",
-				padding: isActive ? "1rem" : "0.5rem 1rem",
+				padding: isActive ? "0.2rem 1rem" : "0rem 1rem",
 				border: isActive
 					? "1px solid var(--accent-color)"
 					: "1px solid transparent",
-				background: isActive
-					? "rgba(255, 255, 255, 0.05)"
-					: "transparent",
-				borderRadius: "var(--radius-lg)",
+				background: isActive ? "rgba(255, 255, 255, 0.05)" : "transparent",
+				borderRadius: "var(--radius-sm)",
 				cursor: mode === "PALETTES" ? "pointer" : "default",
 				transition: "all 0.2s ease",
 			}}
@@ -148,9 +146,7 @@ export function PaletteItem({
 							gap: "0.5rem",
 						}}
 					>
-						<h3
-							style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600 }}
-						>
+						<h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600 }}>
 							{palette.name}
 						</h3>
 						<button
@@ -174,10 +170,14 @@ export function PaletteItem({
 						</button>
 					</div>
 				)}
-				<div
-					style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-				>
-					<span style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "0.875rem" }}>
+				<div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+					<span
+						style={{
+							color: "var(--text-muted)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "0.875rem",
+						}}
+					>
 						{palette.colors.length} shades
 					</span>
 					{mode === "PALETTES" && (
