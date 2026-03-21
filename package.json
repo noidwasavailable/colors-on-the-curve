@@ -1,27 +1,27 @@
 {
-  "name": "color-palette-generator",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev-cli": "bun --hot src/cli/index.tsx",
-    "cli": "bun run src/cli/index.tsx",
-    "gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts",
-    "dev-web": "bun --hot src/web/index.ts"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.4.8",
-    "@types/bun": "latest",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "ink": "^6.8.0",
-    "ntc-ts": "^0.0.8",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
-  }
+	"name": "color-palette-generator",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev-cli": "bun --hot src/cli/index.tsx",
+		"cli": "bun run src/cli/index.tsx",
+		"gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts",
+		"dev-web": "bun --hot src/web/index.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.8",
+		"@types/bun": "latest",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"ink": "^6.8.0",
+		"ntc-ts": "^0.0.8",
+		"react": "^19.2.4",
+		"react-dom": "^19.2.4"
+	}
 }
