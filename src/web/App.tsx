@@ -20,6 +20,12 @@ export function App() {
 	});
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [exportTokensEnabled, setExportTokensEnabled] = useState(false);
+	const [persistedArrayConfig, setPersistedArrayConfig] = useState<
+		PaletteConfig[] | null
+	>(null);
+	const [persistedSpectrumConfig, setPersistedSpectrumConfig] = useState<
+		PalettesConfig | null
+	>(null);
 
 	const previewState = useMemo(() => {
 		let palettes: PaletteResult[] = [];
@@ -73,6 +79,12 @@ export function App() {
 	const handleModeChange = (newMode: UiMode) => {
 		if (mode === newMode) return;
 
+		if (mode === "ARRAY") {
+			setPersistedArrayConfig(config as PaletteConfig[]);
+		} else if (mode === "SPECTRUM") {
+			setPersistedSpectrumConfig(config as PalettesConfig);
+		}
+
 		if (newMode === "SINGLE") {
 			const current =
 				mode === "ARRAY"
@@ -87,40 +99,41 @@ export function App() {
 				cmykSafe: current.cmykSafe,
 			});
 		} else if (newMode === "ARRAY") {
-			const current =
-				mode === "SPECTRUM"
-					? {
-							...defaultPaletteConfig,
-							baseHue: (config as PalettesConfig).hues.start,
-							saturation: (config as PalettesConfig).saturation,
-							lightness: (config as PalettesConfig).lightness,
-							shades: (config as PalettesConfig).shades,
-							cmykSafe: (config as PalettesConfig).cmykSafe,
-						}
-					: (config as PaletteConfig);
-			setConfig([
-				{ ...current, id: crypto.randomUUID() },
-				{ ...current, id: crypto.randomUUID() },
-			]);
-			setActiveIndex(1);
+			if (persistedArrayConfig) {
+				setConfig(persistedArrayConfig);
+				setActiveIndex(0);
+			} else {
+				const current =
+					mode === "SPECTRUM"
+						? {
+								...defaultPaletteConfig,
+								baseHue: (config as PalettesConfig).hues.start,
+								saturation: (config as PalettesConfig).saturation,
+								lightness: (config as PalettesConfig).lightness,
+								shades: (config as PalettesConfig).shades,
+								cmykSafe: (config as PalettesConfig).cmykSafe,
+							}
+						: (config as PaletteConfig);
+				setConfig([{ ...current, id: crypto.randomUUID() }]);
+				setActiveIndex(0);
+			}
 		} else if (newMode === "SPECTRUM") {
-			const current =
-				mode === "ARRAY"
-					? ((config as PaletteConfig[])[0] ?? defaultPaletteConfig)
-					: (config as PaletteConfig);
-			setConfig({
-				...defaultPalettesConfig,
-				hues: {
-					start: current.baseHue,
-					end: (current.baseHue + 60) % 360,
-					count: 3,
-					curve: "linear",
-				},
-				saturation: current.saturation,
-				lightness: current.lightness,
-				shades: current.shades,
-				cmykSafe: current.cmykSafe,
-			});
+			if (persistedSpectrumConfig) {
+				setConfig(persistedSpectrumConfig);
+			} else {
+				const current =
+					mode === "ARRAY"
+						? ((config as PaletteConfig[])[0] ?? defaultPaletteConfig)
+						: (config as PaletteConfig);
+				setConfig({
+					...defaultPalettesConfig,
+					hues: {
+						...defaultPalettesConfig.hues,
+						start: current.baseHue,
+						end: (current.baseHue + 60) % 360,
+					},
+				});
+			}
 		}
 		setMode(newMode);
 	};
@@ -129,8 +142,10 @@ export function App() {
 		if (mode !== "ARRAY") return;
 		const arr = [...(config as PaletteConfig[])];
 		const activePalette = arr[activeIndex] ?? { ...defaultPaletteConfig };
+		const nextHue = (activePalette.baseHue + 20) % 360;
 		arr.push({
 			...JSON.parse(JSON.stringify(activePalette)),
+			baseHue: nextHue,
 			id: crypto.randomUUID(),
 		});
 		setConfig(arr);
