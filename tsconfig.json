@@ -2,24 +2,13 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@/lib/*": [
-				"src/lib/*"
-			],
-			"@/cli/*": [
-				"src/cli/*"
-			],
-			"@/web/*": [
-				"src/web/*"
-			],
-			"@/assets/*": [
-				"src/assets/*"
-			]
+			"@/lib/*": ["src/lib/*"],
+			"@/cli/*": ["src/cli/*"],
+			"@/web/*": ["src/web/*"],
+			"@/assets/*": ["src/assets/*"]
 		},
 		// Environment setup & latest features
-		"lib": [
-			"ESNext",
-			"DOM"
-		],
+		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",
@@ -41,9 +30,5 @@
 		"noUnusedParameters": false,
 		"noPropertyAccessFromIndexSignature": false
 	},
-	"exclude": [
-		"dist",
-		"node_modules",
-		"data"
-	]
+	"exclude": ["dist", "node_modules", "data"]
 }
