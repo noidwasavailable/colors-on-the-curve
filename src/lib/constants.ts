@@ -75,6 +75,7 @@ export const GLOBAL_ACTIONS: readonly KeyAction[] = [
 	{ key: "r", label: "Rename" },
 	{ key: "[ ] 1-9", label: "Select" },
 	{ key: "m", label: "Change Mode" },
+	{ key: "h", label: "Help" },
 	{ key: "s", label: "Save & Exit" },
 	{ key: "q", label: "Quit" },
 ] as const;

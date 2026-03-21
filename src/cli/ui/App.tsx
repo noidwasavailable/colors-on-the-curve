@@ -1,7 +1,7 @@
 import { randomUUIDv7 } from "bun";
 import { Box, Text, useApp, useInput } from "ink";
-import React, { useEffect, useMemo, useState } from "react";
 import { UncontrolledTextInput } from "ink-text-input";
+import React, { useEffect, useMemo, useState } from "react";
 import {
 	APP_TOGGLES,
 	GLOBAL_ACTIONS,
@@ -24,6 +24,8 @@ import type {
 import type { SaveFunction } from "../types";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
+
+const helpText = await Bun.file(new URL("../help.txt", import.meta.url)).text();
 
 interface AppProps {
 	initialConfig: ConfigInput;
@@ -53,6 +55,7 @@ export function App({
 		useState<PalettesConfig | null>(null);
 
 	const [isRenaming, setIsRenaming] = useState(false);
+	const [isHelp, setIsHelp] = useState(false);
 
 	const activeConfig =
 		mode === "PALETTES" ? (config as PaletteConfig[])[activeIndex] : config;
@@ -120,8 +123,17 @@ export function App({
 	}, [initialConfig]);
 
 	useInput((input) => {
+		if (isHelp) {
+			setIsHelp(false);
+			return;
+		}
 		if (isRenaming) return;
 		if (status !== UI_TEXT.statusEditing) return;
+
+		if (input === "h") {
+			setIsHelp(true);
+			return;
+		}
 
 		if (input === "q") {
 			exit();
@@ -259,6 +271,22 @@ export function App({
 		);
 	}
 
+	if (isHelp) {
+		return (
+			<Box
+				padding={2}
+				flexDirection="column"
+				borderStyle="round"
+				borderColor="cyan"
+			>
+				<Text>{helpText}</Text>
+				<Box marginTop={1}>
+					<Text color="#A0A0A0">(Press any key to go back)</Text>
+				</Box>
+			</Box>
+		);
+	}
+
 	if (isRenaming) {
 		const activePaletteResult = previewState.palettes[activeIndex];
 		return (
@@ -269,7 +297,7 @@ export function App({
 				borderColor="green"
 			>
 				<Text bold>Rename Palette</Text>
-				
+
 				{activePaletteResult && (
 					<Box flexDirection="row" marginY={1}>
 						{activePaletteResult.colors.slice(0, 11).map((color) => (

@@ -9,6 +9,15 @@ import { App } from "./ui/App";
 
 async function main() {
 	const args = process.argv.slice(2);
+
+	if (args.includes("--help") || args.includes("-h")) {
+		const helpText = await Bun.file(
+			new URL("./help.txt", import.meta.url),
+		).text();
+		console.log(helpText);
+		process.exit(0);
+	}
+
 	const configPath = args.find((a) => !a.startsWith("--"));
 	const outDirArg = args.find((a) => a.startsWith("--out-dir="));
 	const exportTokensFromFlag = args.includes("--tokens");
