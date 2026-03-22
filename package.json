@@ -1,5 +1,5 @@
 {
-	"name": "color-palette-generator",
+	"name": "colors-on-the-curve",
 	"version": "0.1.0",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
@@ -17,7 +17,8 @@
 		"gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts",
 		"dev-web": "bun --hot src/web/index.ts",
 		"build-cli": "bun scripts/build-cli.ts",
-		"build-web": "bun scripts/build-web.ts"
+		"build-web": "bun scripts/build-web.ts",
+		"build-lib": "bun scripts/build-lib.ts"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8",
