@@ -16,7 +16,8 @@
 		"cli": "bun run src/cli/index.ts",
 		"gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts",
 		"dev-web": "bun --hot src/web/index.ts",
-		"build-cli": "bun scripts/build-cli.ts"
+		"build-cli": "bun scripts/build-cli.ts",
+		"build-web": "bun scripts/build-web.ts"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8",
@@ -33,7 +34,7 @@
 		"ink": "^6.8.0",
 		"ink-text-input": "^6.0.0",
 		"jszip": "^3.10.1",
-		"lucide-react": "^1.0.0-rc.0",
+		"lucide-react": "^0.577.0",
 		"ntc-ts": "^0.0.8",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4"

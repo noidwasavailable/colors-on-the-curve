@@ -3,6 +3,7 @@
 import { useKeyboard } from "@opentui/react";
 import { randomUUIDv7 } from "bun";
 import React, { useEffect, useMemo, useState } from "react";
+import helpText from "@/cli/help.txt";
 import {
 	APP_TOGGLES,
 	GLOBAL_ACTIONS,
@@ -26,7 +27,6 @@ import type { SaveFunction } from "../types";
 import { UI_COLORS } from "./colors";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
-import helpText from "@/cli/help.txt";
 
 interface AppProps {
 	initialConfig: ConfigInput;

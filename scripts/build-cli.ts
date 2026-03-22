@@ -16,7 +16,7 @@ for (const target of [
 	const nodePlatform = platform === "windows" ? "win32" : platform;
 
 	const build = await Bun.build({
-		entrypoints: ["src/cli/index.ts"],
+		entrypoints: config.entryPoints.cli,
 		compile: {
 			target: target,
 			outfile: `${config.outDir.cli}/${target}/cotc`,

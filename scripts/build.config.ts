@@ -4,6 +4,11 @@ const config = {
 		web: "dist/web",
 		lib: "dist/lib",
 	},
-} as const;
+	entryPoints: {
+		cli: ["src/cli/index.ts"],
+		web: ["src/web/index.html"],
+		lib: ["src/lib/index.ts"],
+	},
+};
 
 export default config;

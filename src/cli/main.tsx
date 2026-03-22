@@ -7,9 +7,9 @@ import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
 import { generateTransparencyTokens } from "@/lib/figmaExporter";
 import type { ConfigInput } from "@/lib/types";
+import helpText from "./help.txt";
 import type { SaveFunction } from "./types";
 import { App } from "./ui/App";
-import helpText from "./help.txt";
 
 export async function main() {
 	const args = process.argv.slice(2);
