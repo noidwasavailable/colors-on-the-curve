@@ -1,5 +1,8 @@
 import config from "./build.config";
 
+// if the build doesn't work because of some bun dependency issues, try doing:
+// bun install --os="*" --cpu="*"
+// it will force install all packages for all platforms
 for (const target of [
 	"bun-linux-x64",
 	"bun-linux-arm64",
@@ -9,22 +12,22 @@ for (const target of [
 ] as Bun.Build.CompileTarget[]) {
 	console.log(`Building for target: ${target}`);
 
+	const [_, platform, arch] = target.split("-");
+	const nodePlatform = platform === "windows" ? "win32" : platform;
+
 	const build = await Bun.build({
 		entrypoints: ["src/cli/index.ts"],
 		compile: {
 			target: target,
 			outfile: `${config.outDir.cli}/${target}/cotc`,
 		},
+		define: {
+			"process.platform": JSON.stringify(nodePlatform),
+			"process.arch": JSON.stringify(arch),
+		},
 		format: "esm",
 		minify: true,
 		sourcemap: "linked",
-		banner: `
-      import { createRequire as _createRequire } from 'node:module';
-      const require = _createRequire(import.meta.url);
-    `,
-		external: ["react-devtools-core"],
-		// optimizeImports: ["ink", "ink-text-input", "lucide-react", "ntc-ts"],
-		// bytecode: true,
 	});
 
 	console.log(`Build for ${target}: ${build.success ? "SUCCESS" : "FAIL"}`);
