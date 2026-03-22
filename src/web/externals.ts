@@ -22,6 +22,6 @@ export const EXTERNAL_LINKS: ExternalLink[] = [
 	{
 		icon: socialIcons.Github,
 		label: "Source Code",
-		href: "https://github.com/noidwasavailable",
+		href: "https://github.com/noidwasavailable/colors-on-the-curve",
 	},
 ];
