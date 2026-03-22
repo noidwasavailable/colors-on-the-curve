@@ -1,4 +1,6 @@
-import { Box, Text, useInput } from "ink";
+/** @jsxImportSource @opentui/react */
+import { TextAttributes } from "@opentui/core";
+import { useKeyboard } from "@opentui/react";
 import { useEffect, useMemo, useState } from "react";
 import { PREVIEW_UI, UI_TEXT, type UiMode } from "@/lib/constants";
 import type {
@@ -7,6 +9,7 @@ import type {
 	PaletteResult,
 	PalettesConfig,
 } from "@/lib/types";
+import { UI_COLORS } from "./colors";
 
 interface PalettePreviewProps {
 	config: ConfigInput;
@@ -56,45 +59,45 @@ export function PalettePreview({
 		setScrollOffset((prev) => Math.min(prev, maxOffset));
 	}, [maxOffset]);
 
-	useInput((input) => {
-		if (input === "," || input === "h") {
+	useKeyboard((event) => {
+		if (event.name === "," || event.name === "h") {
 			setScrollOffset((prev) => Math.max(0, prev - 1));
 			return;
 		}
 
-		if (input === "." || input === "l") {
+		if (event.name === "." || event.name === "l") {
 			setScrollOffset((prev) => Math.min(maxOffset, prev + 1));
 		}
 	});
 
 	if (previewError) {
 		return (
-			<Text color="red">
+			<text fg={UI_COLORS.error}>
 				{UI_TEXT.generateErrorPrefix} {previewError}
-			</Text>
+			</text>
 		);
 	}
 
 	if (!palettes.length) {
-		return <Text color="red">{UI_TEXT.noPalettesGenerated}</Text>;
+		return <text fg={UI_COLORS.error}>{UI_TEXT.noPalettesGenerated}</text>;
 	}
 
 	const visibleStart = scrollOffset + 1;
 	const visibleEnd = Math.min(scrollOffset + VISIBLE_SWATCH_COUNT, maxColors);
 
 	return (
-		<Box flexDirection="column">
+		<box flexDirection="column">
 			{maxOffset > 0 && (
-				<Box marginBottom={1} flexDirection="row">
-					<Text color="#A0A0A0">{PREVIEW_UI.horizontalOverflowHint}</Text>
-					<Text color="#A0A0A0">
+				<box marginBottom={1} flexDirection="row">
+					<text fg={UI_COLORS.muted}>{PREVIEW_UI.horizontalOverflowHint}</text>
+					<text fg={UI_COLORS.muted}>
 						{" "}
 						Scroll: ,/. ({visibleStart}-{visibleEnd} of {maxColors})
-					</Text>
-				</Box>
+					</text>
+				</box>
 			)}
 
-			<Box flexDirection="column">
+			<box flexDirection="column">
 				{palettes.map((palette, i) => {
 					const visibleColors = palette.colors.slice(
 						scrollOffset,
@@ -105,54 +108,57 @@ export function PalettePreview({
 						scrollOffset + VISIBLE_SWATCH_COUNT < palette.colors.length;
 
 					return (
-						<Box
+						<box
 							// biome-ignore lint/suspicious/noArrayIndexKey: Array size is static and never reorders
 							key={`${palette.name}-${i}`}
 							flexDirection="row"
 							marginBottom={0}
 						>
-							<Box width={20}>
-								<Text bold color={i !== activeIndex ? "#A0A0A0" : "cyan"}>
-									{`${palette.name} (${i + 1})`}
-								</Text>
-							</Box>
+							<box width={20}>
+								<text
+									fg={i !== activeIndex ? UI_COLORS.muted : UI_COLORS.accent}
+								>
+									<strong>{`${palette.name} (${i + 1})`}</strong>
+								</text>
+							</box>
 
-							<Text color="#A0A0A0">{hasLeft ? "‹ " : "  "}</Text>
+							<text fg={UI_COLORS.muted}>{hasLeft ? "‹ " : "  "}</text>
 
-							<Box flexDirection="row">
+							<box flexDirection="row">
 								{visibleColors.map((color) => (
-									<Box key={color.shade} flexDirection="column" marginRight={1}>
+									<box key={color.shade} flexDirection="column" marginRight={1}>
 										{Array(SWATCH_BLOCK_HEIGHT)
 											.fill(null)
-											.map(() => SWATCH_BLOCK)
-											.map((_, i) => (
-												<Text
+											.map((_, rowIdx) => (
+												<text
 													// biome-ignore lint/suspicious/noArrayIndexKey: Array size is static and never reorders
-													key={i}
-													backgroundColor={color.hex}
-													color={color.hsl[2] > 55 ? "black" : "white"}
+													key={rowIdx}
+													bg={color.hex}
+													fg={color.hsl[2] > 55 ? "black" : "white"}
 												>
 													{SWATCH_BLOCK}
-												</Text>
+												</text>
 											))}
-										<Text
-											dimColor={!(isCmykSafeOn && !color.isCmykSafe)}
-											color={
-												isCmykSafeOn && !color.isCmykSafe ? "red" : undefined
+										<text
+											attributes={
+												isCmykSafeOn && !color.isCmykSafe
+													? undefined
+													: TextAttributes.DIM
 											}
+											fg={isCmykSafeOn && !color.isCmykSafe ? "red" : undefined}
 										>
 											{" "}
 											{color.shade}
-										</Text>
-									</Box>
+										</text>
+									</box>
 								))}
-							</Box>
+							</box>
 
-							<Text color="#A0A0A0">{hasRight ? " ›" : ""}</Text>
-						</Box>
+							<text fg={UI_COLORS.muted}>{hasRight ? " ›" : ""}</text>
+						</box>
 					);
 				})}
-			</Box>
-		</Box>
+			</box>
+		</box>
 	);
 }

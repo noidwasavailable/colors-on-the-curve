@@ -12,8 +12,8 @@
 	},
 	"type": "module",
 	"scripts": {
-		"dev-cli": "bun --hot src/cli/index.tsx",
-		"cli": "bun run src/cli/index.tsx",
+		"dev-cli": "bun --hot src/cli/index.ts",
+		"cli": "bun run src/cli/index.ts",
 		"gen-trans-tokens": "bun run src/lib/transparencyTokensGenerator.ts",
 		"dev-web": "bun --hot src/web/index.ts",
 		"build-cli": "bun scripts/build-cli.ts"

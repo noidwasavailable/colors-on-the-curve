@@ -1,6 +1,7 @@
+/** @jsxImportSource @opentui/react */
+
+import { useKeyboard } from "@opentui/react";
 import { randomUUIDv7 } from "bun";
-import { Box, Text, useApp, useInput } from "ink";
-import { UncontrolledTextInput } from "ink-text-input";
 import React, { useEffect, useMemo, useState } from "react";
 import {
 	APP_TOGGLES,
@@ -22,6 +23,7 @@ import type {
 	PalettesConfig,
 } from "@/lib/types";
 import type { SaveFunction } from "../types";
+import { UI_COLORS } from "./colors";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
 
@@ -42,7 +44,6 @@ export function App({
 	exportTokens,
 	exportTransparencyTokens,
 }: AppProps) {
-	const { exit } = useApp();
 	const [config, setConfig] = useState<ConfigInput>(initialConfig);
 	const [mode, setMode] = useState<UiMode>(initialMode);
 	const [activeIndex, setActiveIndex] = useState(0);
@@ -59,6 +60,7 @@ export function App({
 		useState<PalettesConfig | null>(null);
 
 	const [isRenaming, setIsRenaming] = useState(false);
+	const [renameValue, setRenameValue] = useState("");
 	const [isHelp, setIsHelp] = useState(false);
 
 	const activeConfig =
@@ -126,7 +128,7 @@ export function App({
 		]);
 	}, [initialConfig]);
 
-	useInput((input) => {
+	useKeyboard((event) => {
 		if (isHelp) {
 			setIsHelp(false);
 			return;
@@ -134,37 +136,39 @@ export function App({
 		if (isRenaming) return;
 		if (status !== UI_TEXT.statusEditing) return;
 
-		if (input === "h") {
+		const ch = event.name;
+
+		if (ch === "h") {
 			setIsHelp(true);
 			return;
 		}
 
-		if (input === "q") {
-			exit();
-			return;
+		if (ch === "q") {
+			process.exit(0);
 		}
 
-		if (input === "s") {
+		if (ch === "s") {
 			void saveAndExit();
 			return;
 		}
 
-		if (input === "r") {
+		if (ch === "r") {
+			setRenameValue("");
 			setIsRenaming(true);
 			return;
 		}
 
-		if (input === APP_TOGGLES.exportTokens.key) {
+		if (ch === APP_TOGGLES.exportTokens.key) {
 			setExportTokensEnabled((prev) => !prev);
 			return;
 		}
 
-		if (input === "p") {
+		if (ch === "p") {
 			setExportTransparencyEnabled((prev) => !prev);
 			return;
 		}
 
-		if (input === "+") {
+		if (ch === "+") {
 			if (mode === "PALETTES") {
 				const { newConfig, newActiveIndex } = addPalette(
 					config as PaletteConfig[],
@@ -177,7 +181,7 @@ export function App({
 			return;
 		}
 
-		if (input === "m") {
+		if (ch === "m") {
 			if (mode === "PALETTES") {
 				setPersistedArrayConfig(config as PaletteConfig[]);
 				if (persistedSpectrumConfig) {
@@ -214,19 +218,19 @@ export function App({
 		}
 
 		if (mode === "PALETTES") {
-			if (input === "[" || input === "{") {
+			if (ch === "[" || ch === "{") {
 				setActiveIndex((i) => Math.max(0, i - 1));
 				return;
 			}
 
-			if (input === "]" || input === "}") {
+			if (ch === "]" || ch === "}") {
 				setActiveIndex((i) =>
 					Math.min((config as PaletteConfig[]).length - 1, i + 1),
 				);
 				return;
 			}
 
-			if (input === "-") {
+			if (ch === "-") {
 				const { newConfig, newActiveIndex } = removePalette(
 					config as PaletteConfig[],
 					activeIndex,
@@ -237,7 +241,8 @@ export function App({
 				return;
 			}
 		}
-		const numMatch = input.match(/^[1-9]$/);
+
+		const numMatch = ch.match(/^[1-9]$/);
 		if (numMatch) {
 			const targetIndex = parseInt(numMatch[0], 10) - 1;
 			if (targetIndex < previewState.palettes.length) {
@@ -269,70 +274,86 @@ export function App({
 				console.log(`Transparency tokens saved to ${res.transparencyDir}`);
 			}
 
-			setTimeout(exit, 500);
+			setTimeout(() => process.exit(0), 500);
 		} catch (e) {
 			console.error(e);
-			exit(e as Error);
+			process.exit(1);
 		}
 	};
 
 	if (status !== UI_TEXT.statusEditing) {
 		return (
-			<Box padding={1}>
-				<Text color="green">{status}</Text>
-			</Box>
+			<box padding={1}>
+				<text fg={UI_COLORS.success}>{status}</text>
+			</box>
 		);
 	}
 
 	if (isHelp) {
 		return (
-			<Box
+			<box
 				padding={2}
 				flexDirection="column"
-				borderStyle="round"
-				borderColor="cyan"
+				border
+				borderStyle="rounded"
+				borderColor={UI_COLORS.accent}
 			>
-				<Text>{helpText}</Text>
-				<Box marginTop={1}>
-					<Text color="#A0A0A0">(Press any key to go back)</Text>
-				</Box>
-			</Box>
+				<text>{helpText}</text>
+				<box marginTop={1}>
+					<text fg={UI_COLORS.muted}>(Press any key to go back)</text>
+				</box>
+			</box>
 		);
 	}
 
 	if (isRenaming) {
 		const activePaletteResult = previewState.palettes[activeIndex];
 		return (
-			<Box
+			<box
 				padding={1}
 				flexDirection="column"
+				border
 				borderStyle="single"
-				borderColor="green"
+				borderColor={UI_COLORS.rename}
 			>
-				<Text bold>Rename Palette</Text>
+				<text>
+					<strong>Rename Palette</strong>
+				</text>
 
 				{activePaletteResult && (
-					<Box flexDirection="row" marginY={1}>
+					<box flexDirection="row" marginY={1}>
 						{activePaletteResult.colors.slice(0, 11).map((color) => (
-							<Text key={color.shade} backgroundColor={color.hex}>
+							<text key={color.shade} bg={color.hex}>
 								{"    "}
-							</Text>
+							</text>
 						))}
-					</Box>
+					</box>
 				)}
 
-				<Box flexDirection="row">
-					<Text>New Name: </Text>
-					<UncontrolledTextInput
+				<box flexDirection="row">
+					<text>New Name: </text>
+					{/*
+					  The input component needs an explicit size (flexGrow) from the first
+					  render so opentui allocates a stable buffer region. Without it, the
+					  component starts at 0-width and the first few keystrokes appear to
+					  overwrite each other before the layout stabilises.
+					*/}
+					<input
+						focused
+						placeholder="type new name…"
+						style={{ flexGrow: 1 }}
+						onInput={setRenameValue}
 						onSubmit={(query) => {
-							const newConfig = renamePalette(config, mode, activeIndex, query);
+							const name = typeof query === "string" ? query : renameValue;
+							const newConfig = renamePalette(config, mode, activeIndex, name);
 							setConfig(newConfig);
 							setIsRenaming(false);
+							setRenameValue("");
 						}}
 					/>
-				</Box>
-				<Text color="#A0A0A0">(Press Enter to save)</Text>
-			</Box>
+				</box>
+				<text fg={UI_COLORS.muted}>(Press Enter to save)</text>
+			</box>
 		);
 	}
 
@@ -350,25 +371,24 @@ export function App({
 	};
 
 	return (
-		<Box flexDirection="column" paddingX={1} paddingTop={1}>
-			<Box marginBottom={1} justifyContent="space-between">
-				<Text bold color="cyan">
-					{UI_TEXT.title}
-				</Text>
-				<Text color="#A0A0A0">
+		<box flexDirection="column" paddingX={1} paddingTop={1}>
+			<box marginBottom={1} justifyContent="space-between">
+				<text fg={UI_COLORS.accent}>
+					<strong>{UI_TEXT.title}</strong>
+				</text>
+				<text fg={UI_COLORS.muted}>
 					{UI_TEXT.modeLabel}:{" "}
-					<Text bold color="yellow">
-						{MODE_LABELS[mode]}
-					</Text>
-				</Text>
-			</Box>
+					<strong fg={UI_COLORS.warning}>{MODE_LABELS[mode]}</strong>
+				</text>
+			</box>
 
-			<Box flexDirection="row">
-				<Box
+			<box flexDirection="row">
+				<box
 					width={44}
 					marginRight={2}
+					border
 					borderStyle="single"
-					borderColor="#A0A0A0"
+					borderColor={UI_COLORS.muted}
 					flexDirection="column"
 				>
 					<Editor
@@ -377,12 +397,13 @@ export function App({
 						onChange={onUpdateConfig}
 						outOfGamutCount={outOfGamutCount}
 					/>
-				</Box>
+				</box>
 
-				<Box
+				<box
 					flexGrow={1}
+					border
 					borderStyle="single"
-					borderColor="#A0A0A0"
+					borderColor={UI_COLORS.muted}
 					flexDirection="column"
 					paddingX={1}
 					paddingY={1}
@@ -393,55 +414,58 @@ export function App({
 						activeIndex={activeIndex}
 						previewState={previewState}
 					/>
-				</Box>
-			</Box>
+				</box>
+			</box>
 
-			<Box marginTop={1} flexDirection="row" justifyContent="space-between">
-				<Box flexDirection="column">
-					<Text color="#A0A0A0">
+			<box marginTop={1} flexDirection="row" justifyContent="space-between">
+				<box flexDirection="column">
+					<text fg={UI_COLORS.muted}>
 						{MODE_ACTIONS[mode]?.map((action, index) => (
 							<React.Fragment key={`${mode}-${action.key}-${action.label}`}>
-								<Text bold>{action.key} </Text>
+								<strong>{action.key} </strong>
 								{action.label}
 								{index < (MODE_ACTIONS[mode]?.length ?? 0) - 1 ? "  " : ""}
 							</React.Fragment>
 						))}
-					</Text>
+					</text>
 
-					<Text color="#A0A0A0">
+					<text fg={UI_COLORS.muted}>
 						{NAVIGATION_ACTIONS.map((action, index) => (
 							<React.Fragment key={`${action.key}-${action.label}`}>
-								<Text bold>{action.key} </Text>
+								<strong>{action.key} </strong>
 								{action.label}
 								{index < NAVIGATION_ACTIONS.length - 1 ? "  " : ""}
 							</React.Fragment>
 						))}
-					</Text>
+					</text>
 
-					<Text color={exportTokensEnabled ? "green" : "#A0A0A0"}>
-						<Text bold>{APP_TOGGLES.exportTokens.key} </Text>
+					<text fg={exportTokensEnabled ? UI_COLORS.success : UI_COLORS.muted}>
+						<strong>{APP_TOGGLES.exportTokens.key} </strong>
 						{APP_TOGGLES.exportTokens.label}:{" "}
-						<Text bold>{exportTokensEnabled ? "ON" : "OFF"}</Text>
-					</Text>
-					<Text color={exportTransparencyEnabled ? "green" : "#A0A0A0"}>
-						<Text bold>p </Text>
+						<strong>{exportTokensEnabled ? "ON" : "OFF"}</strong>
+					</text>
+					<text
+						fg={exportTransparencyEnabled ? UI_COLORS.success : UI_COLORS.muted}
+					>
+						<strong>p </strong>
 						Transparency Tokens:{" "}
-						<Text bold>{exportTransparencyEnabled ? "ON" : "OFF"}</Text>
-					</Text>
-				</Box>
+						<strong>{exportTransparencyEnabled ? "ON" : "OFF"}</strong>
+					</text>
+				</box>
 
-				<Box flexDirection="column" alignItems="flex-end">
+				<box flexDirection="column" alignItems="flex-end">
 					{GLOBAL_ACTIONS.map((action) => (
-						<Text
+						<text
 							key={`${action.key}-${action.label}`}
-							color={action.key === "q" ? "red" : "green"}
-							bold
+							fg={action.key === "q" ? UI_COLORS.error : UI_COLORS.success}
 						>
-							[{action.key}] {action.label}
-						</Text>
+							<strong>
+								[{action.key}] {action.label}
+							</strong>
+						</text>
 					))}
-				</Box>
-			</Box>
-		</Box>
+				</box>
+			</box>
+		</box>
 	);
 }

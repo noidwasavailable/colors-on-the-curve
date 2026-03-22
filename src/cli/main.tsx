@@ -1,6 +1,8 @@
+/** @jsxImportSource @opentui/react */
 import { mkdir, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve } from "node:path";
-import { render } from "ink";
+import { createCliRenderer } from "@opentui/core";
+import { createRoot } from "@opentui/react";
 import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
 import { generateTransparencyTokens } from "@/lib/figmaExporter";
@@ -118,7 +120,8 @@ export async function main() {
 			};
 		};
 
-		render(
+		const renderer = await createCliRenderer({ exitOnCtrlC: false });
+		createRoot(renderer).render(
 			<App
 				initialConfig={initialConfig}
 				initialMode={initialMode}
