@@ -26,8 +26,7 @@ import type { SaveFunction } from "../types";
 import { UI_COLORS } from "./colors";
 import { Editor } from "./Editor";
 import { PalettePreview } from "./PalettePreview";
-
-const helpText = await Bun.file(new URL("../help.txt", import.meta.url)).text();
+import helpText from "@/cli/help.txt";
 
 interface AppProps {
 	initialConfig: ConfigInput;

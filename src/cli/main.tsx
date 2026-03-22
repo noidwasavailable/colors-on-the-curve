@@ -9,14 +9,12 @@ import { generateTransparencyTokens } from "@/lib/figmaExporter";
 import type { ConfigInput } from "@/lib/types";
 import type { SaveFunction } from "./types";
 import { App } from "./ui/App";
+import helpText from "./help.txt";
 
 export async function main() {
 	const args = process.argv.slice(2);
 
 	if (args.includes("--help") || args.includes("-h")) {
-		const helpText = await Bun.file(
-			new URL("./help.txt", import.meta.url),
-		).text();
 		console.log(helpText);
 		process.exit(0);
 	}
