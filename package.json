@@ -28,6 +28,8 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@opentui/core": "^0.1.90",
+		"@opentui/react": "^0.1.90",
 		"ink": "^6.8.0",
 		"ink-text-input": "^6.0.0",
 		"jszip": "^3.10.1",
