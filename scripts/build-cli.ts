@@ -19,7 +19,7 @@ for (const target of [
 		entrypoints: config.entryPoints.cli,
 		compile: {
 			target: target,
-			outfile: `${config.outDir.cli}/${target}/cotc`,
+			outfile: `${config.outDir.cli}/${target}/cotc-${target}`,
 		},
 		define: {
 			"process.platform": JSON.stringify(nodePlatform),
