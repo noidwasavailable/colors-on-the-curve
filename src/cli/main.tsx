@@ -120,7 +120,11 @@ export async function main() {
 			};
 		};
 
-		const renderer = await createCliRenderer({ exitOnCtrlC: false });
+		const renderer = await createCliRenderer({
+			exitOnCtrlC: true,
+			useMouse: false,
+		});
+
 		createRoot(renderer).render(
 			<App
 				initialConfig={initialConfig}

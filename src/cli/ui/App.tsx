@@ -128,7 +128,7 @@ export function App({
 		]);
 	}, [initialConfig]);
 
-	useKeyboard((event) => {
+	useKeyboard((key) => {
 		if (isHelp) {
 			setIsHelp(false);
 			return;
@@ -136,7 +136,7 @@ export function App({
 		if (isRenaming) return;
 		if (status !== UI_TEXT.statusEditing) return;
 
-		const ch = event.name;
+		const ch = key.name;
 
 		if (ch === "h") {
 			setIsHelp(true);
@@ -148,7 +148,7 @@ export function App({
 		}
 
 		if (ch === "s") {
-			void saveAndExit();
+			saveAndExit();
 			return;
 		}
 
