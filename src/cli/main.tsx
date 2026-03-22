@@ -1,20 +1,20 @@
+/** @jsxImportSource @opentui/react */
 import { mkdir, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve } from "node:path";
-import { render } from "ink";
+import { createCliRenderer } from "@opentui/core";
+import { createRoot } from "@opentui/react";
 import type { UiMode } from "@/lib/constants";
 import { defaultPaletteConfig } from "@/lib/defaults";
 import { generateTransparencyTokens } from "@/lib/figmaExporter";
 import type { ConfigInput } from "@/lib/types";
+import helpText from "./help.txt";
 import type { SaveFunction } from "./types";
 import { App } from "./ui/App";
 
-async function main() {
+export async function main() {
 	const args = process.argv.slice(2);
 
 	if (args.includes("--help") || args.includes("-h")) {
-		const helpText = await Bun.file(
-			new URL("./help.txt", import.meta.url),
-		).text();
 		console.log(helpText);
 		process.exit(0);
 	}
@@ -118,7 +118,12 @@ async function main() {
 			};
 		};
 
-		render(
+		const renderer = await createCliRenderer({
+			exitOnCtrlC: true,
+			useMouse: false,
+		});
+
+		createRoot(renderer).render(
 			<App
 				initialConfig={initialConfig}
 				initialMode={initialMode}
@@ -132,5 +137,3 @@ async function main() {
 		process.exit(1);
 	}
 }
-
-main();

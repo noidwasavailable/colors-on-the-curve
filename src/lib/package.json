@@ -1,0 +1,27 @@
+{
+	"name": "colors-on-the-curve",
+	"version": "0.1.0",
+	"description": "Generate HSL color palettes with CMYK-safe output and Figma token export",
+	"type": "module",
+	"main": "./index.js",
+	"module": "./index.js",
+	"types": "./index.d.ts",
+	"exports": {
+		".": {
+			"import": "./index.js",
+			"types": "./index.d.ts"
+		}
+	},
+	"license": "MIT",
+	"files": [
+		"**/*.js",
+		"**/*.d.ts",
+		"README.md"
+	],
+	"dependencies": {
+		"ntc-ts": "^0.0.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

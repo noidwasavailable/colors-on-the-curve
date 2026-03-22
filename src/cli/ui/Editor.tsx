@@ -1,4 +1,5 @@
-import { Box, Text, useInput } from "ink";
+/** @jsxImportSource @opentui/react */
+import { useKeyboard } from "@opentui/react";
 import { useMemo, useState } from "react";
 import {
 	EDITOR_PROPERTIES,
@@ -8,6 +9,7 @@ import {
 	type UiMode,
 } from "@/lib/constants";
 import type { ConfigInput } from "@/lib/types";
+import { UI_COLORS } from "./colors";
 
 interface EditorProps {
 	config: ConfigInput;
@@ -73,13 +75,13 @@ export function Editor({
 	);
 	const activeProp = allProps[safeActiveIndex];
 
-	useInput((input, key) => {
-		if (key.upArrow) {
+	useKeyboard((event) => {
+		if (event.name === "up") {
 			setActivePropIndex((prev) => Math.max(0, prev - 1));
 			return;
 		}
 
-		if (key.downArrow) {
+		if (event.name === "down") {
 			setActivePropIndex((prev) => Math.min(allProps.length - 1, prev + 1));
 			return;
 		}
@@ -87,18 +89,19 @@ export function Editor({
 		const prop = allProps[activePropIndex];
 		if (!prop) return;
 
-		const isAdjustKey = key.leftArrow || key.rightArrow;
-		const isToggleKey = input === " " || key.return;
-		if (!isAdjustKey && !isToggleKey) return;
+		const isLeftRight = event.name === "left" || event.name === "right";
+		const isToggleKey = event.name === "space" || event.name === "return";
+		if (!isLeftRight && !isToggleKey) return;
 
-		const direction = key.rightArrow ? 1 : key.leftArrow ? -1 : 0;
+		const direction =
+			event.name === "right" ? 1 : event.name === "left" ? -1 : 0;
 
 		if (prop.kind === "number") {
-			if (!isAdjustKey) return;
+			if (!isLeftRight) return;
 
 			const currentRaw = getPathValue(config, prop.path);
 			const current = typeof currentRaw === "number" ? currentRaw : prop.min;
-			const delta = (key.shift ? prop.step * 10 : prop.step) * direction;
+			const delta = (event.shift ? prop.step * 10 : prop.step) * direction;
 			const nextValue = clamp(current + delta, prop.min, prop.max);
 			if (nextValue === current) return;
 
@@ -114,7 +117,7 @@ export function Editor({
 		}
 
 		if (prop.kind === "select") {
-			if (!isAdjustKey) return;
+			if (!isLeftRight) return;
 
 			const currentRaw = getPathValue(config, prop.path);
 			const currentIndex = prop.options.findIndex(
@@ -134,12 +137,14 @@ export function Editor({
 	});
 
 	return (
-		<Box flexDirection="column" paddingX={2} paddingY={1}>
-			<Box marginBottom={1}>
-				<Text bold underline>
-					{UI_TEXT.editorTitle}
-				</Text>
-			</Box>
+		<box flexDirection="column" paddingX={2} paddingY={1}>
+			<box marginBottom={1}>
+				<text>
+					<strong>
+						<u>{UI_TEXT.editorTitle}</u>
+					</strong>
+				</text>
+			</box>
 
 			{allProps.map((prop, index) => {
 				const isActive = index === safeActiveIndex;
@@ -161,25 +166,27 @@ export function Editor({
 				}
 
 				return (
-					<Box key={prop.id}>
-						<Text color={isActive ? "green" : undefined}>
+					<box key={prop.id}>
+						<text fg={isActive ? UI_COLORS.success : undefined}>
 							{isActive ? "> " : "  "}
 							{prop.label.padEnd(15, " ")}: {renderedValue}
-						</Text>
-					</Box>
+						</text>
+					</box>
 				);
 			})}
 
-			<Box marginTop={1} flexDirection="column">
-				<Text color="yellow">{activeProp?.description ?? ""}</Text>
+			<box marginTop={1} flexDirection="column">
+				<text fg={UI_COLORS.warning}>{activeProp?.description ?? ""}</text>
 				{activeProp?.id === "cmykSafe" &&
 					"cmykSafe" in config &&
 					config.cmykSafe &&
 					outOfGamutCount !== undefined &&
 					outOfGamutCount > 0 && (
-						<Text color="red">{outOfGamutCount} colors out of gamut</Text>
+						<text fg={UI_COLORS.error}>
+							{outOfGamutCount} colors out of gamut
+						</text>
 					)}
-			</Box>
-		</Box>
+			</box>
+		</box>
 	);
 }
