@@ -1,80 +1,181 @@
-# Mathematical Color Palette Generator
+# Colors on the Curve
+### Mathematically Precise Color Palettes
 
-A robust utility for calculating visually smooth and mathematically precise UI color palettes based on HSL curves, with built-in CMYK gamut safety parsing.
+A robust utility for calculating visually smooth and mathematically precise UI color palettes based on HSL curves, with built-in CMYK gamut safety and Figma token export.
 
 ## Features
 
-- **Mathematical Curve Interpolation:** Use `linear`, `easeIn`, `easeOut`, `easeInOut`, or `parabolic` curves to transition saturation and lightness over shade indices.
-- **Parametric Saturation:** Support for granular saturation points (peak, minLight, minDark) mapped seamlessly.
-- **Gamut Safety:** Programmatically enforces CMYK maximum limits out of the box. Automatically desaturates off-gamut colors to ensure print and digital safety.
-- **Export Formats:** Generate palettes and optionally export Figma Design Tokens seamlessly.
+- **Mathematical Curve Interpolation:** Use `linear`, `easeIn`, `easeOut`, `easeInOut`, or `parabolic` curves for saturation, lightness, and hue shift.
+- **Parametric Saturation:** Granular saturation control via peak, minLight, and minDark anchor points.
+- **Gamut Safety:** Automatically desaturates off-gamut colors to stay within standard CMYK TAC limits (≤ 300%).
+- **Export Formats:** JSON palettes, Figma Design Tokens (DTCG), and per-opacity transparency token files.
+- **Three Interfaces:** Interactive web app, interactive CLI, and a headless TypeScript/JS library.
 
-## Installation
+---
 
-This project is built using [Bun](https://bun.sh/).
+## 🌐 Web Application
+
+The web app provides a fully interactive, visual palette builder with real-time previews and one-click export.
+
+### Running locally
+
+This project uses [Bun](https://bun.sh/).
 
 ```bash
 bun install
-```
-
-## Usage: Web Application
-
-The project includes an interactive web application for generating, previewing, and exporting palettes visually.
-
-```bash
 bun run dev-web
 ```
-This will start a local server at `http://localhost:3000` where you can interactively build colors, check contrast, and manage palette arrays. 
 
-## Usage: CLI Application
+Open `http://localhost:3000` to get started.
 
-You can also run the generator entirely within your terminal using the interactive Ink-based CLI.
+### What you can do
+
+- Build and rename unlimited palettes in Array or Spectrum generation modes.
+- Adjust hue, saturation, lightness, hue shift, and shades with `+/−` steppers.
+- Preview all shades with their hex, HSL, CMYK values and WCAG contrast ratios.
+- **Export** as structured JSON, Figma Design Tokens, or a ZIP including per-opacity transparency token files.
+- **Import** a previously exported JSON file to resume your session.
+
+---
+
+## 🖥️ CLI Application
+
+The CLI offers the same generation engine in a fully interactive terminal UI powered by Ink/React.
+
+### Running
 
 ```bash
 bun run cli [configPath] [options]
 ```
 
-### CLI Options
+| Argument / Option | Description |
+|---|---|
+| `configPath` | Path to a `.ts` or `.json` config file. If omitted, starts with defaults. |
+| `--out-dir=<dir>` | Directory to write output files (default: current working directory) |
+| `--tokens` | Export Figma Design Tokens alongside the palette JSON |
+| `--transparency-tokens` | Export per-opacity transparency token files (10 %–100 %). Requires `--tokens`. |
+| `-h, --help` | Print the help message and exit |
 
-- `configPath`: Path to a `.ts` or `.json` config file to load. If omitted, uses an interactive default.
-- `--out-dir=<dir>`: Directory to save generated JSON palettes (default: "data")
-- `--tokens`: Export Figma tokens alongside palettes
-- `-h, --help`: Show the CLI help menu
+### Interactive keyboard controls
 
-**Interactive Controls**:
-When running the CLI, you have access to real-time adjustments via your keyboard:
-- **Navigation:** `↑/↓` to select properties, `←/→` to adjust values
-- **Palettes Mode:** `+` to add new, `-` to remove, `1-9` to immediately jump to a specific palette
-- **Renaming:** `r` to type a new palette name with a visual color preview
-- **Switch Modes:** `m` toggles between Array generation and full Spectrum generation
-- **Globally:** `s` to write structured JSON outputs and exit
+**PALETTES mode**
 
-## Usage: Core Library
+| Key | Action |
+|---|---|
+| `↑ / ↓` | Move between editable properties |
+| `← / →` | Change value (hold `Shift` for ×10 steps) |
+| `r` | Rename the current palette |
+| `m` | Switch to SPECTRUM mode |
+| `+` | Add a new palette (auto-shifts hue) |
+| `-` | Remove the current palette |
+| `1 – 9` | Jump directly to a palette by index |
+| `[ / ]` | Paginate through palettes |
 
-To use the generator programmatically in your own code, import the underlying typescript library functions.
+**Global**
+
+| Key | Action |
+|---|---|
+| `s` | Save all palettes to JSON and exit |
+| `q` | Quit without saving |
+| `h` | Show the help screen |
+| `t` | Toggle Figma token export on save |
+| `p` | Toggle transparency token export on save (requires tokens on) |
+
+---
+
+## 📦 Library (npm)
+
+`colors-on-the-curve` is published as a standalone ESM package. Install it in your own project:
+
+```bash
+npm install colors-on-the-curve
+# or
+bun add colors-on-the-curve
+```
+
+### Quick start
 
 ```ts
-import { generatePalette } from './src/lib/generator';
-import type { PaletteConfig } from './src/lib/types';
+import { generatePalette, expandPalettesConfig } from 'colors-on-the-curve';
+import type { PaletteConfig, PalettesConfig } from 'colors-on-the-curve';
 
+// Single palette
 const config: PaletteConfig = {
-  name: "Ocean Blue",
+  name: 'Ocean Blue',
   baseHue: 210,
   hueShift: -15,
+  hueCurve: 'easeOut',
   saturation: { peak: 100, minDark: 40, minLight: 20, curve: 'parabolic' },
   lightness: { start: 96, end: 12, curve: 'easeOut' },
   shades: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
-  cmykSafe: true
+  cmykSafe: true,
 };
 
 const result = generatePalette(config);
-console.log(result.colors);
+console.log(result.colors); // ColorResult[]
 ```
 
-## Running Tests
+### Spectrum / multi-palette generation
 
-Validations and boundary limits are comprehensively tested using Bun's native testing module.
+```ts
+// Generate a range of palettes spread across the hue wheel
+const palettesConfig: PalettesConfig = {
+  namePrefix: 'Brand',
+  hues: { start: 0, end: 300, count: 6, curve: 'easeInOut' },
+  hueShift: -10,
+  saturation: { peak: 90, minDark: 30, minLight: 10, curve: 'parabolic' },
+  lightness: { start: 95, end: 10, curve: 'easeOut' },
+  shades: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
+  cmykSafe: true,
+};
+
+const palettes = expandPalettesConfig(palettesConfig); // PaletteConfig[]
+const results = palettes.map(generatePalette);          // PaletteResult[]
+```
+
+### Exporting tokens
+
+```ts
+import { exportFigmaTokens, generateTransparencyTokens } from 'colors-on-the-curve';
+
+// Figma Design Tokens (DTCG format)
+const tokens = exportFigmaTokens(results);
+
+// Transparency tokens (returns one token group per opacity step)
+const transparencyTokens = generateTransparencyTokens(results);
+```
+
+### Exported API surface
+
+| Export | Kind | Description |
+|---|---|---|
+| `generatePalette` | function | Generate a single `PaletteResult` from a `PaletteConfig` |
+| `expandPalettesConfig` | function | Expand a `PalettesConfig` into an array of `PaletteConfig` |
+| `exportFigmaTokens` | function | Build a DTCG-compatible Figma token tree |
+| `generateTransparencyTokens` | function | Generate per-opacity transparency token groups |
+| `buildTransparencyTokensList` | function | List individual transparency token entries |
+| `setTokensAlpha` | function | Apply a custom alpha to a token group |
+| `applyCurve` | function | Apply a named curve to a value |
+| `hslToRgb`, `rgbToHex`, `rgbToHsl`, `rgbToCmyk`, `makeCmykSafe` | functions | Color math utilities |
+| `defaultPaletteConfig`, `defaultPalettesConfig`, `defaultShades`, … | constants | Sensible defaults for configs |
+| `PaletteConfig`, `PalettesConfig`, `PaletteResult`, `ColorResult`, `CurveConfig`, `SaturationConfig`, `CurveType`, `ConfigInput`, `FigmaToken`, `FigmaTokenGroup`, `Hexcode` | types | Full TypeScript type definitions |
+
+---
+
+## 🧪 Tests
+
+Unit and boundary tests are written with Bun's native test runner.
 
 ```bash
 bun test
 ```
+
+---
+
+## Building
+
+| Script | Description |
+|---|---|
+| `bun run build-lib` | Compile the library to `dist/lib/` |
+| `bun run build-web` | Bundle the web app to `dist/web/` |
+| `bun run build-cli` | Compile a standalone CLI binary to `dist/cli/` |
