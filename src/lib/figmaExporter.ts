@@ -36,7 +36,9 @@ export function exportFigmaTokens(
 		}
 	}
 
-	result["com.figma.modeName"] = "Mode 1";
+	result.$extensions = {
+		"com.figma.modeName": "Mode 1",
+	};
 
 	return result;
 }
