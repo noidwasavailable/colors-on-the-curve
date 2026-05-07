@@ -35,7 +35,13 @@ console.log(`Build for lib: SUCCESS (${build.outputs.length} output(s))`);
 // 3. Emit .d.ts declarations via tsc
 console.log("Emitting type declarations...");
 const tsc = Bun.spawn(
-	[process.execPath, "x", "tsc", "--project", join(rootDir, "tsconfig.lib.json")],
+	[
+		process.execPath,
+		"x",
+		"tsc",
+		"--project",
+		join(rootDir, "tsconfig.lib.json"),
+	],
 	{ cwd: rootDir, stdout: "inherit", stderr: "inherit" },
 );
 const tscCode = await tsc.exited;

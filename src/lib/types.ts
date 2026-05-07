@@ -19,16 +19,21 @@ export interface SaturationConfig {
 }
 
 export interface PaletteConfig {
+	version?: number;
+	colorSpace?: "oklch" | "hsl";
 	id?: string;
 	name?: string;
 	baseHue: number; // 0 - 360
 	hueShift?: number; // total shift in degrees from lightest to darkest (e.g. -20 or 15)
 	hueCurve?: CurveType; // curve to apply to the hue shift
 	saturation: SaturationConfig;
+	chroma?: SaturationConfig;
 	lightness: CurveConfig; // typically start = 95 (lightest), end = 10 (darkest)
+	oklchLightness?: CurveConfig;
 	shades: number[]; // e.g., [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 	cmykSafe?: boolean; // if true, forces output to remain within standard CMYK limits (TAC <= 300%)
 	cmykReconciliation?: "clamp" | "scale-down";
+	srgbReconciliation?: "l4-binary-search" | "min-de-projection";
 }
 
 export interface ColorResult {
@@ -38,6 +43,8 @@ export interface ColorResult {
 	hsl: [number, number, number];
 	cmyk: [number, number, number, number]; // percentages 0-100
 	isCmykSafe: boolean; // false if color exceeded TAC or limits before clamping
+	oklch?: [number, number, number];
+	isOutOfSrgbGamut?: boolean;
 }
 
 export interface PaletteResult {
@@ -54,16 +61,21 @@ export interface HueRangeConfig {
 }
 
 export interface PalettesConfig {
+	version?: number;
+	colorSpace?: "oklch" | "hsl";
 	namePrefix?: string;
 	names?: string[];
 	hues: HueRangeConfig;
 	hueShift?: number;
 	hueCurve?: CurveType;
 	saturation: SaturationConfig;
+	chroma?: SaturationConfig;
 	lightness: CurveConfig;
+	oklchLightness?: CurveConfig;
 	shades: number[];
 	cmykSafe?: boolean;
 	cmykReconciliation?: "clamp" | "scale-down";
+	srgbReconciliation?: "l4-binary-search" | "min-de-projection";
 }
 
 export type ConfigInput = PaletteConfig | PaletteConfig[] | PalettesConfig;
