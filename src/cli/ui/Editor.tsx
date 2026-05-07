@@ -16,6 +16,7 @@ interface EditorProps {
 	mode: UiMode;
 	onChange: (updater: (prev: ConfigInput) => ConfigInput) => void;
 	outOfGamutCount?: number;
+	outOfSrgbCount?: number;
 }
 
 function getPathValue<T = unknown>(obj: ConfigInput, path: PropertyPath): T {
@@ -56,6 +57,7 @@ export function Editor({
 	mode,
 	onChange,
 	outOfGamutCount,
+	outOfSrgbCount,
 }: EditorProps) {
 	const [activePropIndex, setActivePropIndex] = useState(0);
 
@@ -65,8 +67,20 @@ export function Editor({
 				? EDITOR_PROPERTIES.spectrumOnly
 				: EDITOR_PROPERTIES.palettesOnly;
 
-		return [...modeSpecific, ...EDITOR_PROPERTIES.common];
-	}, [mode]);
+		const colorSpace = "colorSpace" in config ? config.colorSpace : "oklch";
+
+		return [...modeSpecific, ...EDITOR_PROPERTIES.common].filter((prop) => {
+			if (colorSpace === "hsl") {
+				return (
+					!prop.id.startsWith("chroma") &&
+					!prop.id.startsWith("oklchLight") &&
+					!prop.id.startsWith("srgbRecon")
+				);
+			}
+			// OKLCH is default
+			return !prop.id.startsWith("sat") && !prop.id.startsWith("light");
+		});
+	}, [mode, config]);
 
 	const safeActiveIndex = clamp(
 		activePropIndex,
@@ -77,16 +91,20 @@ export function Editor({
 
 	useKeyboard((event) => {
 		if (event.name === "up") {
-			setActivePropIndex((prev) => Math.max(0, prev - 1));
+			setActivePropIndex((prev) =>
+				Math.max(0, Math.min(prev, allProps.length - 1) - 1),
+			);
 			return;
 		}
 
 		if (event.name === "down") {
-			setActivePropIndex((prev) => Math.min(allProps.length - 1, prev + 1));
+			setActivePropIndex((prev) =>
+				Math.min(allProps.length - 1, Math.min(prev, allProps.length - 1) + 1),
+			);
 			return;
 		}
 
-		const prop = allProps[activePropIndex];
+		const prop = allProps[safeActiveIndex];
 		if (!prop) return;
 
 		const isLeftRight = event.name === "left" || event.name === "right";
@@ -102,7 +120,9 @@ export function Editor({
 			const currentRaw = getPathValue(config, prop.path);
 			const current = typeof currentRaw === "number" ? currentRaw : prop.min;
 			const delta = (event.shift ? prop.step * 10 : prop.step) * direction;
-			const nextValue = clamp(current + delta, prop.min, prop.max);
+			const nextValue = Number(
+				clamp(current + delta, prop.min, prop.max).toFixed(3),
+			);
 			if (nextValue === current) return;
 
 			onChange((prev) => setPathValue(prev, prop.path, nextValue));
@@ -184,6 +204,13 @@ export function Editor({
 					outOfGamutCount > 0 && (
 						<text fg={UI_COLORS.error}>
 							{outOfGamutCount} colors out of gamut
+						</text>
+					)}
+				{("colorSpace" in config ? config.colorSpace : "oklch") === "oklch" &&
+					outOfSrgbCount !== undefined &&
+					outOfSrgbCount > 0 && (
+						<text fg={UI_COLORS.warning}>
+							{outOfSrgbCount} colors mapped to sRGB
 						</text>
 					)}
 			</box>

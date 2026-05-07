@@ -160,6 +160,17 @@ export const EDITOR_PROPERTIES = {
 
 	common: [
 		{
+			id: "colorSpace",
+			kind: "select",
+			label: "Color Space",
+			description: "Color space to use for palette generation.",
+			path: ["colorSpace"] as const,
+			options: [
+				{ value: "oklch", label: "OKLCH" },
+				{ value: "hsl", label: "HSL" },
+			],
+		},
+		{
 			id: "hueShift",
 			kind: "number",
 			label: "Hue Shift",
@@ -216,6 +227,44 @@ export const EDITOR_PROPERTIES = {
 			options: CURVE_OPTIONS,
 		},
 		{
+			id: "chromaPeak",
+			kind: "number",
+			label: "Chroma Peak",
+			description: "Maximum chroma reached near the middle shades.",
+			path: ["chroma", "peak"] as const,
+			step: 0.01,
+			min: 0,
+			max: 0.4,
+		},
+		{
+			id: "chromaMinDark",
+			kind: "number",
+			label: "Chroma Min Dark",
+			description: "Chroma floor for the darkest shade.",
+			path: ["chroma", "minDark"] as const,
+			step: 0.01,
+			min: 0,
+			max: 0.4,
+		},
+		{
+			id: "chromaMinLight",
+			kind: "number",
+			label: "Chroma Min Light",
+			description: "Chroma floor for the lightest shade.",
+			path: ["chroma", "minLight"] as const,
+			step: 0.01,
+			min: 0,
+			max: 0.4,
+		},
+		{
+			id: "chromaCurve",
+			kind: "select",
+			label: "Chroma Curve",
+			description: "Curve controlling chroma ramp toward dark/light ends.",
+			path: ["chroma", "curve"] as const,
+			options: CURVE_OPTIONS,
+		},
+		{
 			id: "lightStart",
 			kind: "number",
 			label: "Light Start",
@@ -244,6 +293,35 @@ export const EDITOR_PROPERTIES = {
 			options: CURVE_OPTIONS,
 		},
 		{
+			id: "oklchLightStart",
+			kind: "number",
+			label: "OKLCH L. Start",
+			description: "Lightness value used for the lightest shade (OKLCH).",
+			path: ["oklchLightness", "start"] as const,
+			step: 0.01,
+			min: 0,
+			max: 1.0,
+		},
+		{
+			id: "oklchLightEnd",
+			kind: "number",
+			label: "OKLCH L. End",
+			description: "Lightness value used for the darkest shade (OKLCH).",
+			path: ["oklchLightness", "end"] as const,
+			step: 0.01,
+			min: 0,
+			max: 1.0,
+		},
+		{
+			id: "oklchLightCurve",
+			kind: "select",
+			label: "OKLCH L. Curve",
+			description:
+				"Curve controlling lightness interpolation per shade (OKLCH).",
+			path: ["oklchLightness", "curve"] as const,
+			options: CURVE_OPTIONS,
+		},
+		{
 			id: "cmykSafe",
 			kind: "toggle",
 			label: "CMYK Safe",
@@ -262,6 +340,18 @@ export const EDITOR_PROPERTIES = {
 			options: [
 				{ value: "scale-down", label: "Scale Down" },
 				{ value: "clamp", label: "Clamp" },
+			],
+		},
+		{
+			id: "srgbReconciliation",
+			kind: "select",
+			label: "sRGB Reconcile",
+			description:
+				"Gamut mapping strategy for OKLCH colors falling outside sRGB.",
+			path: ["srgbReconciliation"] as const,
+			options: [
+				{ value: "min-de-projection", label: "Min dE" },
+				{ value: "l4-binary-search", label: "L4 Chroma" },
 			],
 		},
 	] as const satisfies readonly EditorPropertyMeta[],

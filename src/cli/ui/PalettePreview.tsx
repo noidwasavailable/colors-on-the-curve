@@ -145,9 +145,16 @@ export function PalettePreview({
 													? undefined
 													: TextAttributes.DIM
 											}
-											fg={isCmykSafeOn && !color.isCmykSafe ? "red" : undefined}
+											fg={
+												isCmykSafeOn && !color.isCmykSafe
+													? "red"
+													: color.isOutOfSrgbGamut
+														? UI_COLORS.warning
+														: undefined
+											}
 										>
 											{" "}
+											{color.isOutOfSrgbGamut ? "*" : ""}
 											{color.shade}
 										</text>
 									</box>

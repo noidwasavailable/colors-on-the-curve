@@ -96,6 +96,16 @@ export function App({
 		return count;
 	}, [previewState.palettes]);
 
+	const outOfSrgbCount = useMemo(() => {
+		let count = 0;
+		for (const p of previewState.palettes) {
+			for (const c of p.colors) {
+				if (c.isOutOfSrgbGamut) count++;
+			}
+		}
+		return count;
+	}, [previewState.palettes]);
+
 	useEffect(() => {
 		if (Array.isArray(initialConfig)) {
 			setMode("PALETTES");
@@ -395,6 +405,7 @@ export function App({
 						mode={mode}
 						onChange={onUpdateConfig}
 						outOfGamutCount={outOfGamutCount}
+						outOfSrgbCount={outOfSrgbCount}
 					/>
 				</box>
 
