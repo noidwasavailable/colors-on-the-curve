@@ -2,7 +2,9 @@
 export {
 	applyCurve,
 	hslToRgb,
+	isSrgbDisplayable,
 	makeCmykSafe,
+	oklchToRgb,
 	rgbToCmyk,
 	rgbToHex,
 	rgbToHsl,
