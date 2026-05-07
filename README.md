@@ -1,13 +1,14 @@
 # Colors on the Curve
 ### Mathematically Precise Color Palettes
 
-A robust utility for calculating visually smooth and mathematically precise UI color palettes based on HSL curves, with built-in CMYK gamut safety and Figma token export.
+A robust utility for calculating visually smooth and mathematically precise UI color palettes based on OKLCH and HSL curves, with built-in CMYK gamut safety and Figma token export.
 
 ## Features
 
-- **Mathematical Curve Interpolation:** Use `linear`, `easeIn`, `easeOut`, `easeInOut`, or `parabolic` curves for saturation, lightness, and hue shift.
-- **Parametric Saturation:** Granular saturation control via peak, minLight, and minDark anchor points.
-- **Gamut Safety:** Automatically desaturates off-gamut colors to stay within standard CMYK TAC limits (≤ 300%).
+- **Perceptually Uniform Color Spaces:** Build palettes using modern OKLCH (default) or traditional HSL.
+- **Mathematical Curve Interpolation:** Use `linear`, `easeIn`, `easeOut`, `easeInOut`, or `parabolic` curves for chroma/saturation, lightness, and hue shift.
+- **Parametric Saturation/Chroma:** Granular control via peak, minLight, and minDark anchor points.
+- **Gamut Safety:** Accurately maps out-of-gamut colors into sRGB space (CSS Level 4 Binary Search or Min dE Projection) and automatically desaturates to stay within standard CMYK TAC limits (≤ 300%).
 - **Export Formats:** JSON palettes, Figma Design Tokens (DTCG), and per-opacity transparency token files.
 - **Three Interfaces:** Interactive web app, interactive CLI, and a headless TypeScript/JS library.
 
@@ -102,13 +103,18 @@ import type { PaletteConfig, PalettesConfig } from 'colors-on-the-curve';
 // Single palette
 const config: PaletteConfig = {
   name: 'Ocean Blue',
+  colorSpace: 'oklch',
   baseHue: 210,
   hueShift: -15,
   hueCurve: 'easeOut',
+  chroma: { peak: 0.15, minDark: 0.05, minLight: 0.02, curve: 'parabolic' },
+  oklchLightness: { start: 0.96, end: 0.12, curve: 'easeOut' },
+  // HSL fallback options
   saturation: { peak: 100, minDark: 40, minLight: 20, curve: 'parabolic' },
   lightness: { start: 96, end: 12, curve: 'easeOut' },
   shades: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
   cmykSafe: true,
+  srgbReconciliation: 'min-de-projection'
 };
 
 const result = generatePalette(config);
@@ -121,8 +127,12 @@ console.log(result.colors); // ColorResult[]
 // Generate a range of palettes spread across the hue wheel
 const palettesConfig: PalettesConfig = {
   namePrefix: 'Brand',
+  colorSpace: 'oklch',
   hues: { start: 0, end: 300, count: 6, curve: 'easeInOut' },
   hueShift: -10,
+  chroma: { peak: 0.14, minDark: 0.04, minLight: 0.01, curve: 'parabolic' },
+  oklchLightness: { start: 0.95, end: 0.10, curve: 'easeOut' },
+  // HSL fallback options
   saturation: { peak: 90, minDark: 30, minLight: 10, curve: 'parabolic' },
   lightness: { start: 95, end: 10, curve: 'easeOut' },
   shades: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
@@ -156,7 +166,7 @@ const transparencyTokens = generateTransparencyTokens(results);
 | `buildTransparencyTokensList` | function | List individual transparency token entries |
 | `setTokensAlpha` | function | Apply a custom alpha to a token group |
 | `applyCurve` | function | Apply a named curve to a value |
-| `hslToRgb`, `rgbToHex`, `rgbToHsl`, `rgbToCmyk`, `makeCmykSafe` | functions | Color math utilities |
+| `oklchToRgb`, `isSrgbDisplayable`, `hslToRgb`, `rgbToHex`, `rgbToHsl`, `rgbToCmyk`, `makeCmykSafe` | functions | Color math utilities |
 | `defaultPaletteConfig`, `defaultPalettesConfig`, `defaultShades`, … | constants | Sensible defaults for configs |
 | `PaletteConfig`, `PalettesConfig`, `PaletteResult`, `ColorResult`, `CurveConfig`, `SaturationConfig`, `CurveType`, `ConfigInput`, `FigmaToken`, `FigmaTokenGroup`, `Hexcode` | types | Full TypeScript type definitions |
 
